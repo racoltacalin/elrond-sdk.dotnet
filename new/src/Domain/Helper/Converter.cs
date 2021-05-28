@@ -8,13 +8,16 @@ namespace Erdcsharp.Domain.Helper
     public static class Converter
     {
         private const byte UnsignedByte = 0x00;
+
         public static BigInteger ToBigInteger(byte[] bytes, bool isUnsigned = false, bool isBigEndian = false)
         {
             if (isUnsigned)
             {
                 if (bytes.FirstOrDefault() != UnsignedByte)
                 {
-                    bytes = bytes.Prepend(UnsignedByte).ToArray();
+                    var data = new[] {UnsignedByte}.ToList();
+                    data.AddRange(bytes);
+                    bytes = data.ToArray();
                 }
             }
 
@@ -34,9 +37,9 @@ namespace Erdcsharp.Domain.Helper
                 bytes = bytes.Reverse().ToArray();
             }
 
-            if (!isUnsigned) 
+            if (!isUnsigned)
                 return bytes;
-            
+
             if (bytes.FirstOrDefault() == UnsignedByte)
             {
                 bytes = bytes.Slice(1);

@@ -78,8 +78,9 @@ namespace Erdcsharp.Domain
 
         public string Sign(string data)
         {
-            return this.Sign(Encoding.UTF8.GetBytes(data));
+            return Sign(Encoding.UTF8.GetBytes(data));
         }
+
         public string Sign(byte[] data)
         {
             var parameters = new Ed25519PrivateKeyParameters(_privateKey, 0);
