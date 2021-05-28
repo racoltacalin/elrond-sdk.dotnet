@@ -3,26 +3,21 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Numerics;
 using System.Threading.Tasks;
-using Erdcsharp;
+using Elrond.SDK.Console;
 using Erdcsharp.Domain;
 using Erdcsharp.Domain.Values;
 using Erdcsharp.Manager;
 using Erdcsharp.Provider;
 using Erdcsharp.Provider.Dtos;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Elrond.SDK.Console
+namespace Erdcsharp.Console
 {
     public class Program
     {
         public static async Task Main(string[] args)
         {
-            var services = new ServiceCollection();
-            services.AddElrondProvider(Extension.Network.TestNet);
+            var provider = new ElrondProvider(new HttpClient { BaseAddress = new Uri("https://testnet-gateway.elrond.com") });
 
-            var serviceProvider = services.BuildServiceProvider();
-
-            var provider = serviceProvider.GetRequiredService<IElrondProvider>();
             {
                 var password = "&KEiHn!rdBTRCPtaF9Bf";
                 var address = "erd17rnvj9shx2x9vh2ckw0nf53vvlylj6235lmrhu668rg2c9a8mxjqvjrhq5";
@@ -33,8 +28,8 @@ namespace Elrond.SDK.Console
                 //var sc = await DeploySmartContract(provider, constants, wallet, "SmartContracts/auction/auction.wasm");
 
                 await CreateNFTTokenThenTransfer(
-                    serviceProvider.GetRequiredService<IEsdtTokenManager>(),
-                    serviceProvider.GetRequiredService<IElrondProvider>(),
+                    new EsdtTokenManager(provider), 
+                    provider,
                     wallet);
 
 
