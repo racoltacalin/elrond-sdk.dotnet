@@ -25,10 +25,10 @@ namespace Erdcsharp.Manager
             byte[] hash = null);
 
 
-        Task<EsdtToken> GetNftToken(AddressValue address, string tokenIdentifier, ulong tokenId);
+        Task<EsdtToken> GetNftToken(Address address, string tokenIdentifier, ulong tokenId);
 
-        Task TransferEsdtToken(Wallet wallet, EsdtToken token, AddressValue receiver, BigInteger quantity);
+        Task TransferEsdtToken(Wallet wallet, EsdtToken token, Address receiver, BigInteger quantity);
 
-        Task TransferEsdtTokenToSmartContract(Wallet wallet, EsdtToken token, AddressValue smartContract, string functionName, BigInteger quantity, params IBinaryType[] args);
+        Task TransferEsdtTokenToSmartContract(Wallet wallet, EsdtToken token, Address smartContract, string functionName, BigInteger quantity, params IBinaryType[] args);
     }
 }

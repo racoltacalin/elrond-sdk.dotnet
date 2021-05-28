@@ -4,19 +4,19 @@ using Erdcsharp.Domain.Exceptions;
 
 namespace Erdcsharp.Domain
 {
-    public class Balance
+    public class TokenAmount
     {
-        const long OneEgld = 1000000000000000000;
+        private const long OneEgld = 1000000000000000000;
         private const int Denomination = 18;
 
         public BigInteger Number { get; }
 
-        public Balance(long value)
+        public TokenAmount(long value)
         {
             Number = new BigInteger(value);
         }
 
-        public Balance(string value)
+        public TokenAmount(string value)
         {
             Number = BigInteger.Parse(value);
             if (Number.Sign == -1)
@@ -51,23 +51,24 @@ namespace Erdcsharp.Domain
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static Balance EGLD(string value)
+        // ReSharper disable once InconsistentNaming
+        public static TokenAmount EGLD(string value)
         {
             var decimalValue = decimal.Parse(value, CultureInfo.InvariantCulture);
             var p = decimalValue * OneEgld;
             var bigGold = new BigInteger(p);
 
-            return new Balance(bigGold.ToString());
+            return new TokenAmount(bigGold.ToString());
         }
 
-        public static Balance From(string value)
+        public static TokenAmount From(string value)
         {
-            return new Balance(value);
+            return new TokenAmount(value);
         }
 
-        public static Balance Zero()
+        public static TokenAmount Zero()
         {
-            return new Balance(0);
+            return new TokenAmount(0);
         }
 
         public override string ToString()

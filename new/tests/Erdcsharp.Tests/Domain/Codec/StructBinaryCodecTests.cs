@@ -5,8 +5,9 @@ using Erdcsharp.Domain.Codec;
 using Erdcsharp.Domain.Values;
 using NUnit.Framework;
 
-namespace Elrond_sdk.dotnet.tests.Domain.Codec
+namespace Erdcsharp.Tests.Domain.Codec
 {
+    [TestFixture]
     public class StructBinaryCodecTests
     {
         private StructBinaryCodec _sut;
@@ -49,7 +50,7 @@ namespace Elrond_sdk.dotnet.tests.Domain.Codec
             });
             var structValue = new StructValue(type, new[]
             {
-                new StructField("ticket_price", NumericValue.Balance(Balance.EGLD("10"))),
+                new StructField("ticket_price", NumericValue.TokenAmount(TokenAmount.EGLD("10"))),
                 new StructField("tickets_left", NumericValue.U32Value(0)),
                 new StructField("deadline", NumericValue.U64Value(0x000000005fc2b9db)),
                 new StructField("max_entries_per_user", NumericValue.U32Value(0xffffffff)),
@@ -123,7 +124,7 @@ namespace Elrond_sdk.dotnet.tests.Domain.Codec
 
             Assert.That(structValue.GetStructField("original_owner"), Is.Not.Null);
             var original_owner = structValue.GetStructField("original_owner").Value;
-            Assert.That(original_owner.ValueOf<AddressValue>().Bech32,
+            Assert.That(original_owner.ValueOf<Address>().Bech32,
                 Is.EqualTo("erd1lkeja8knfjhkqzvrf3d9hmefxzt75wtf3vlg9m7ccugc8jmnrdpqy7yjeq"));
 
             Assert.That(structValue.GetStructField("current_bid"), Is.Not.Null);
@@ -132,7 +133,7 @@ namespace Elrond_sdk.dotnet.tests.Domain.Codec
 
             Assert.That(structValue.GetStructField("current_winner"), Is.Not.Null);
             var current_winner = structValue.GetStructField("current_winner").Value;
-            Assert.That(current_winner.ValueOf<AddressValue>().Bech32, Is.EqualTo(AddressValue.Zero().Bech32));
+            Assert.That(current_winner.ValueOf<Address>().Bech32, Is.EqualTo(Address.Zero().Bech32));
 
             Assert.That(structValue.GetStructField("marketplace_cut_percentage"), Is.Not.Null);
             var marketplace_cut_percentage = structValue.GetStructField("marketplace_cut_percentage").Value;

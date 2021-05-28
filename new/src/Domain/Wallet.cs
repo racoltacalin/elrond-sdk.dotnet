@@ -5,8 +5,7 @@ using System.Text;
 using dotnetstandard_bip32;
 using dotnetstandard_bip39;
 using Erdcsharp.Cryptography;
-using Erdcsharp.Domain.Serializer;
-using Erdcsharp.Domain.Values;
+using Erdcsharp.Domain.Helper;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Crypto.Signers;
@@ -27,7 +26,7 @@ namespace Erdcsharp.Domain
 
         public Account GetAccount()
         {
-            return new Account(AddressValue.FromBytes(_publicKey));
+            return new Account(Address.FromBytes(_publicKey));
         }
 
         public Wallet(byte[] privateKey)
@@ -81,7 +80,6 @@ namespace Erdcsharp.Domain
         {
             return this.Sign(Encoding.UTF8.GetBytes(data));
         }
-
         public string Sign(byte[] data)
         {
             var parameters = new Ed25519PrivateKeyParameters(_privateKey, 0);

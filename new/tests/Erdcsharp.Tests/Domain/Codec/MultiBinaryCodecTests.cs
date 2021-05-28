@@ -5,8 +5,9 @@ using Erdcsharp.Domain.Codec;
 using Erdcsharp.Domain.Values;
 using NUnit.Framework;
 
-namespace Elrond_sdk.dotnet.tests.Domain.Codec
+namespace Erdcsharp.Tests.Domain.Codec
 {
+    [TestFixture]
     public class MultiBinaryCodecTests
     {
         private MultiBinaryCodec _sut;
@@ -22,8 +23,8 @@ namespace Elrond_sdk.dotnet.tests.Domain.Codec
         {
             // Arrange
             var value = MultiValue.From(
-                NumericValue.BigUintValue(Balance.From("100000000000000000").Number),
-                NumericValue.BigUintValue(Balance.From("10000000000000000000").Number)
+                NumericValue.BigUintValue(TokenAmount.From("100000000000000000").Number),
+                NumericValue.BigUintValue(TokenAmount.From("10000000000000000000").Number)
             );
 
             // Act
@@ -39,8 +40,8 @@ namespace Elrond_sdk.dotnet.tests.Domain.Codec
         {
             // Arrange
             var value = MultiValue.From(
-                NumericValue.BigUintValue(Balance.From("100000000000000000").Number),
-                NumericValue.BigUintValue(Balance.From("10000000000000000000").Number)
+                NumericValue.BigUintValue(TokenAmount.From("100000000000000000").Number),
+                NumericValue.BigUintValue(TokenAmount.From("10000000000000000000").Number)
             );
 
             // Act

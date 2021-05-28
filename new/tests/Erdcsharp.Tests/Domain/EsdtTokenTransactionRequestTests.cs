@@ -3,22 +3,21 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 using Erdcsharp.Domain;
-using Erdcsharp.Domain.Values;
 using NUnit.Framework;
 
-namespace Elrond_sdk.dotnet.tests.Domain
+namespace Erdcsharp.Tests.Domain
 {
-    public class ESDTTokenTests
+    [TestFixture]
+    public class EsdtTokenTransactionRequestTests
     {
         private readonly Account _account;
-        private readonly AddressValue _receiver;
+        private readonly Address _receiver;
         private readonly Constants _constants;
 
-        public ESDTTokenTests()
+        public EsdtTokenTransactionRequestTests()
         {
-            _account = new Account(
-                AddressValue.FromBech32("erd1sg4u62lzvgkeu4grnlwn7h2s92rqf8a64z48pl9c7us37ajv9u8qj9w8xg"));
-            _receiver = AddressValue.FromBech32("erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx");
+            _account = new Account(Address.FromBech32("erd1sg4u62lzvgkeu4grnlwn7h2s92rqf8a64z48pl9c7us37ajv9u8qj9w8xg"));
+            _receiver = Address.FromBech32("erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx");
             _constants = Constants.New();
             _constants.ChainId = "1";
             _constants.GasPerDataByte = 1500;

@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Erdcsharp.Domain.Serializer;
+using Erdcsharp.Domain.Helper;
 using Erdcsharp.Domain.Values;
 using Erdcsharp.Provider.Dtos;
 
 namespace Erdcsharp.Domain
 {
     /// <summary>
-    /// Elrond Standard Digital Token (Including NFT / SFT)
+    /// Elrond Standard Digital Token (Including NFT / SemiFungible)
     /// </summary>
     public class EsdtToken
     {
@@ -23,16 +23,16 @@ namespace Erdcsharp.Domain
 
         public int Royalties { get; set; }
 
-        public AddressValue Creator { get; set; }
+        public Address Creator { get; set; }
         public Uri[] Uris { get; set; }
 
         public EsdtTokenType TokenType { get; set; }
 
         public enum EsdtTokenType
         {
-            ESDT,
-            SFT,
-            NFT
+            Fungible,
+            SemiFungible,
+            NonFungible
         }
 
         public static EsdtToken From(EsdtNftItemDto esdtNft)
@@ -50,7 +50,7 @@ namespace Erdcsharp.Domain
                 TokenId = esdtNft.Nonce,
                 Royalties = ushort.Parse(esdtNft.Royalties),
                 //Attributes = attributesDic,
-                Creator = AddressValue.FromBech32(esdtNft.Creator),
+                Creator = Address.FromBech32(esdtNft.Creator),
                 Uris = uris,
                 Hash = Converter.FromHexString(esdtNft.Hash)
             };

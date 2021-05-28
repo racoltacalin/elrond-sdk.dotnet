@@ -1,13 +1,13 @@
 ﻿using System.Threading.Tasks;
 using Erdcsharp.Domain;
-using Erdcsharp.Domain.Values;
 using Erdcsharp.Provider;
 using Erdcsharp.Provider.Dtos;
 using Moq;
 using NUnit.Framework;
 
-namespace Elrond_sdk.dotnet.tests.Domain
+namespace Erdcsharp.Tests.Domain
 {
+    [TestFixture]
     public class GasLimitTests
     {
         private IElrondProvider _elrondProvider;
@@ -33,7 +33,7 @@ namespace Elrond_sdk.dotnet.tests.Domain
         {
             // Arrange
             var constants = await Constants.GetFromNetwork(_elrondProvider);
-            var address = AddressValue.FromBech32("erd1qqqqqqqqqqqqqpgq3wltgm6g8n6telq3wz2apgjqcydladdtu4cq3ch0l0");
+            var address = Address.FromBech32("erd1qqqqqqqqqqqqqpgq3wltgm6g8n6telq3wz2apgjqcydladdtu4cq3ch0l0");
             var transactionRequest = TransactionRequest.CreateTransaction(new Account(address), constants);
 
             transactionRequest.SetData("KLJHGFhjbnklmjghfdhfkjl");

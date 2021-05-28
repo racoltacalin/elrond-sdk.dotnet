@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Erdcsharp.Domain.Serializer;
+using Erdcsharp.Domain.Helper;
 
 namespace Erdcsharp.Domain.Values
 {

@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using Erdcsharp.Domain.Serializer;
+using Erdcsharp.Domain.Helper;
 
 namespace Erdcsharp.Domain
 {
@@ -10,6 +10,11 @@ namespace Erdcsharp.Domain
         public string Address { get; set; }
         public string Bech32 { get; set; }
         public Crypto Crypto { get; set; }
+
+        public static KeyFile From(string json)
+        {
+            return JsonSerializer.Deserialize<KeyFile>(json);
+        }
 
         public static KeyFile FromFilePath(string filePath)
         {

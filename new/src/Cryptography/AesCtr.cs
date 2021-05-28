@@ -11,7 +11,7 @@ namespace Erdcsharp.Cryptography
             aesObj.Padding = PaddingMode.None;
             var zeroIv = new byte[16];
             var encrypt = aesObj.CreateEncryptor(psk, zeroIv);
-            var counter = new byte[16]; // copy input iv (do not modify it)
+            var counter = new byte[16];
             for (var i = 0; i < 16; i++)
             {
                 counter[i] = iv[i];

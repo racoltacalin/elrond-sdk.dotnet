@@ -8,8 +8,8 @@ namespace Erdcsharp.Domain
 {
     public class EsdtTokenTransactionRequest
     {
-        private static readonly AddressValue EsdtNftAddress =
-            AddressValue.FromBech32("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u");
+        private static readonly Address EsdtNftAddress =
+            Address.FromBech32("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u");
 
         private const string Issue = "issue";
         private const string IssueSemiFungible = "issueSemiFungible";
@@ -35,23 +35,23 @@ namespace Erdcsharp.Domain
         public static class SFTRoles
         {
             /// <summary>
-            /// This role allows one to create a new SFT
+            /// This role allows one to create a new SemiFungible
             /// </summary>
             public const string ESDTRoleNFTCreate = "ESDTRoleNFTCreate";
 
             /// <summary>
-            /// This role allows one to burn quantity of a specific SFT
+            /// This role allows one to burn quantity of a specific SemiFungible
             /// </summary>
             public const string ESDTRoleNFTBurn = "ESDTRoleNFTBurn";
 
             /// <summary>
-            /// This role allows one to add quantity of a specific SFT
+            /// This role allows one to add quantity of a specific SemiFungible
             /// </summary>
             public const string ESDTRoleNFTAddQuantity = "ESDTRoleNFTAddQuantity";
         }
 
         /// <summary>
-        /// Issue an ESDT Token
+        /// Issue an Fungible Token
         /// </summary>
         /// <param name="constants"></param>
         /// <param name="account"></param>
@@ -68,7 +68,7 @@ namespace Erdcsharp.Domain
             BigInteger initialSupply,
             ushort numberOfDecimals)
         {
-            var balance = constants.ChainId == "T" ? Balance.EGLD("5") : Balance.EGLD("0.05");
+            var balance = constants.ChainId == "T" ? TokenAmount.EGLD("5") : TokenAmount.EGLD("0.05");
             var transaction = SmartContract.CreateCallSmartContractTransactionRequest(constants,
                 account,
                 EsdtNftAddress,
@@ -96,7 +96,7 @@ namespace Erdcsharp.Domain
         public static TransactionRequest SetSpecialRoleTransactionRequest(
             Constants constants,
             Account account,
-            AddressValue receiver,
+            Address receiver,
             string tokenIdentifier,
             params string[] roles)
         {
@@ -105,7 +105,7 @@ namespace Erdcsharp.Domain
                 account,
                 EsdtNftAddress,
                 SetSpecialRole,
-                Balance.Zero(),
+                TokenAmount.Zero(),
                 TokenIdentifierValue.From(tokenIdentifier),
                 receiver);
 
@@ -129,7 +129,7 @@ namespace Erdcsharp.Domain
             string tokenName,
             string tokenTicker)
         {
-            var balance = constants.ChainId == "T" ? Balance.EGLD("5") : Balance.EGLD("0.05");
+            var balance = constants.ChainId == "T" ? TokenAmount.EGLD("5") : TokenAmount.EGLD("0.05");
             var transaction = SmartContract.CreateCallSmartContractTransactionRequest(constants,
                 account,
                 EsdtNftAddress,
@@ -157,7 +157,7 @@ namespace Erdcsharp.Domain
             string tokenName,
             string tokenTicker)
         {
-            var balance = constants.ChainId == "T" ? Balance.EGLD("5") : Balance.EGLD("0.05");
+            var balance = constants.ChainId == "T" ? TokenAmount.EGLD("5") : TokenAmount.EGLD("0.05");
             var transaction = SmartContract.CreateCallSmartContractTransactionRequest(constants,
                 account,
                 EsdtNftAddress,
@@ -184,7 +184,7 @@ namespace Erdcsharp.Domain
         public static TransactionRequest TransferEsdtNftTransactionRequest(
             Constants constants,
             Account account,
-            AddressValue receiver,
+            Address receiver,
             string tokenIdentifier,
             ulong tokenId,
             BigInteger quantity)
@@ -193,7 +193,7 @@ namespace Erdcsharp.Domain
                 account,
                 account.Address,
                 EsdtNftTransfer,
-                Balance.Zero(),
+                TokenAmount.Zero(),
                 TokenIdentifierValue.From(tokenIdentifier),
                 NumericValue.U64Value(tokenId),
                 NumericValue.BigUintValue(quantity),
@@ -207,7 +207,7 @@ namespace Erdcsharp.Domain
         }
 
         /// <summary>
-        /// Perform a ESDT Transfer
+        /// Perform a Fungible Transfer
         /// </summary>
         /// <param name="constants"></param>
         /// <param name="account"></param>
@@ -218,7 +218,7 @@ namespace Erdcsharp.Domain
         public static TransactionRequest TransferEsdtTransactionRequest(
             Constants constants,
             Account account,
-            AddressValue receiver,
+            Address receiver,
             string tokenIdentifier,
             BigInteger quantity)
         {
@@ -227,7 +227,7 @@ namespace Erdcsharp.Domain
                 account,
                 receiver,
                 EsdtTransfer,
-                Balance.Zero(),
+                TokenAmount.Zero(),
                 TokenIdentifierValue.From(tokenIdentifier),
                 NumericValue.BigIntValue(quantity));
 
@@ -242,7 +242,7 @@ namespace Erdcsharp.Domain
         /// <param name="constants"></param>
         /// <param name="account">Account with ESDTRoleNFTCreate role</param>
         /// <param name="tokenIdentifier">The token identifier</param>
-        /// <param name="name">The name of the NFT or SFT</param>
+        /// <param name="name">The name of the NFT or SemiFungible</param>
         /// <param name="royalties">Allows the creator to receive royalties for any transaction involving their NFT (Base format is a numeric value between 0 an 10000 (0 meaning 0% and 10000 meaning 100%)</param>
         /// <param name="hash">Arbitrary field that should contain the hash of the NFT metadata.</param>
         /// <param name="attributes">Arbitrary field that should contain a set of attributes in the format desired by the creator</param>
@@ -272,7 +272,7 @@ namespace Erdcsharp.Domain
                 account,
                 account.Address,
                 EsdtNftCreate,
-                Balance.Zero(),
+                TokenAmount.Zero(),
                 TokenIdentifierValue.From(tokenIdentifier),
                 NumericValue.BigUintValue(1),
                 TokenIdentifierValue.From(name),

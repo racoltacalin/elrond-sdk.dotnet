@@ -1,7 +1,7 @@
-﻿using Erdcsharp.Domain.Serializer;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Erdcsharp.Domain.Helper;
 
 namespace Erdcsharp.Domain.Values
 {

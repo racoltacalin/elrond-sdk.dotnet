@@ -42,7 +42,7 @@ namespace Erdcsharp.Domain.Values
             new NumericValue(TypeValue.BigUintTypeValue, value);
 
         public static NumericValue BigIntValue(BigInteger value) => new NumericValue(TypeValue.BigIntTypeValue, value);
-        public static NumericValue Balance(Balance value) => new NumericValue(TypeValue.BigUintTypeValue, value.Number);
+        public static NumericValue TokenAmount(TokenAmount value) => new NumericValue(TypeValue.BigUintTypeValue, value.Number);
 
         public override string ToString()
         {

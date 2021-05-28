@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Erdcsharp.Domain;
-using Erdcsharp.Domain.Serializer;
+using Erdcsharp.Domain.Helper;
 using Erdcsharp.Domain.Values;
 using Erdcsharp.Provider;
 using Erdcsharp.Provider.Dtos;
@@ -112,7 +112,7 @@ namespace Erdcsharp.Manager
             return new EsdtToken
             {
                 Name = tokenName,
-                TokenType = EsdtToken.EsdtTokenType.NFT,
+                TokenType = EsdtToken.EsdtTokenType.NonFungible,
                 TokenIdentifier = TokenIdentifierValue.From(tokenIdentifier),
                 Creator = account.Address,
                 TokenId = nonce,
@@ -123,13 +123,13 @@ namespace Erdcsharp.Manager
             };
         }
 
-        public async Task<EsdtToken> GetNftToken(AddressValue address, string tokenIdentifier, ulong tokenId)
+        public async Task<EsdtToken> GetNftToken(Address address, string tokenIdentifier, ulong tokenId)
         {
             var esdtNftToken = await _provider.GetEsdtNftToken(address.Bech32, tokenIdentifier, tokenId);
             return EsdtToken.From(esdtNftToken);
         }
 
-        public async Task TransferEsdtToken(Wallet wallet, EsdtToken token, AddressValue receiver, BigInteger quantity)
+        public async Task TransferEsdtToken(Wallet wallet, EsdtToken token, Address receiver, BigInteger quantity)
         {
             var account = wallet.GetAccount();
             var constants = await GetConstants();
@@ -138,7 +138,7 @@ namespace Erdcsharp.Manager
             TransactionRequest request;
             switch (token.TokenType)
             {
-                case EsdtToken.EsdtTokenType.ESDT:
+                case EsdtToken.EsdtTokenType.Fungible:
                     request = EsdtTokenTransactionRequest.TransferEsdtTransactionRequest(
                         constants,
                         account,
@@ -148,8 +148,8 @@ namespace Erdcsharp.Manager
                     );
 
                     break;
-                case EsdtToken.EsdtTokenType.SFT:
-                case EsdtToken.EsdtTokenType.NFT:
+                case EsdtToken.EsdtTokenType.SemiFungible:
+                case EsdtToken.EsdtTokenType.NonFungible:
                     request = EsdtTokenTransactionRequest.TransferEsdtNftTransactionRequest(
                         constants,
                         account,
@@ -167,7 +167,7 @@ namespace Erdcsharp.Manager
             transaction.EnsureTransactionSuccess();
         }
 
-        public async Task TransferEsdtTokenToSmartContract(Wallet wallet, EsdtToken token, AddressValue smartContract,
+        public async Task TransferEsdtTokenToSmartContract(Wallet wallet, EsdtToken token, Address smartContract,
             string functionName, BigInteger quantity, params IBinaryType[] args)
         {
             var account = wallet.GetAccount();
@@ -177,7 +177,7 @@ namespace Erdcsharp.Manager
             TransactionRequest request;
             switch (token.TokenType)
             {
-                case EsdtToken.EsdtTokenType.ESDT:
+                case EsdtToken.EsdtTokenType.Fungible:
                     request = EsdtTokenTransactionRequest.TransferEsdtTransactionRequest(
                         constants,
                         account,
@@ -186,8 +186,8 @@ namespace Erdcsharp.Manager
                         quantity
                     );
                     break;
-                case EsdtToken.EsdtTokenType.SFT:
-                case EsdtToken.EsdtTokenType.NFT:
+                case EsdtToken.EsdtTokenType.SemiFungible:
+                case EsdtToken.EsdtTokenType.NonFungible:
                     request = EsdtTokenTransactionRequest.TransferEsdtNftTransactionRequest(
                         constants,
                         account,

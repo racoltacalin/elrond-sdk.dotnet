@@ -2,12 +2,13 @@
 using System.Numerics;
 using Erdcsharp.Domain;
 using Erdcsharp.Domain.Codec;
-using Erdcsharp.Domain.Serializer;
+using Erdcsharp.Domain.Helper;
 using Erdcsharp.Domain.Values;
 using NUnit.Framework;
 
-namespace Elrond_sdk.dotnet.tests.Domain.Codec
+namespace Erdcsharp.Tests.Domain.Codec
 {
+    [TestFixture]
     public class NumericBinaryCodecTests
     {
         private NumericBinaryCodec _sut;
@@ -379,7 +380,7 @@ namespace Elrond_sdk.dotnet.tests.Domain.Codec
         public void EncodeNested_DecodeNested_BalanceValue()
         {
             // Arrange
-            var value = NumericValue.Balance(Balance.EGLD("12.876564"));
+            var value = NumericValue.TokenAmount(TokenAmount.EGLD("12.876564"));
 
             // Act
             var encoded = _sut.EncodeNested(value);

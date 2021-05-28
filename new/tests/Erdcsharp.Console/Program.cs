@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Numerics;
 using System.Threading.Tasks;
-using Elrond.Dotnet.Sdk;
-using Elrond.Dotnet.Sdk.Domain;
-using Elrond.Dotnet.Sdk.Domain.Values;
-using Elrond.Dotnet.Sdk.Manager;
-using Elrond.Dotnet.Sdk.Provider;
-using Elrond.Dotnet.Sdk.Provider.Dtos;
+using Erdcsharp;
+using Erdcsharp.Domain;
+using Erdcsharp.Domain.Values;
+using Erdcsharp.Manager;
+using Erdcsharp.Provider;
+using Erdcsharp.Provider.Dtos;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Elrond.SDK.Console
@@ -44,7 +44,7 @@ namespace Elrond.SDK.Console
                 await CreatingValueTransferTransactions(provider, constants, wallet);
 
                 // This sc is already deployed
-                var auction = AddressValue.FromBech32("erd1qqqqqqqqqqqqqpgqjc4rtxq4q7ap37ujrud855ydy6rkslu5rdpqsum6wy");
+                var auction = Address.FromBech32("erd1qqqqqqqqqqqqqpgqjc4rtxq4q7ap37ujrud855ydy6rkslu5rdpqsum6wy");
                 await QueryAuctionSmartContractWithoutAbi(provider, auction);
                 await QueryAuctionSmartContractWithAbi(provider, auction);
                 await QueryAuctionSmartContractWithMultiResult(provider, auction);
@@ -71,7 +71,7 @@ namespace Elrond.SDK.Console
         {
             System.Console.WriteLine("SynchronizingAnAccountObject");
 
-            var address = AddressValue.FromBech32("erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx");
+            var address = Address.FromBech32("erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx");
             var account = new Account(address);
             await account.Sync(provider);
 
@@ -87,11 +87,11 @@ namespace Elrond.SDK.Console
             System.Console.WriteLine("CreatingValueTransferTransactions");
 
             var sender = wallet.GetAccount();
-            var receiver = AddressValue.FromBech32("erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th");
+            var receiver = Address.FromBech32("erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th");
             await sender.Sync(provider);
 
             var transaction =
-                TransactionRequest.CreateTransaction(sender, constants, receiver, Balance.EGLD("0.0000054715"));
+                TransactionRequest.CreateTransaction(sender, constants, receiver, TokenAmount.EGLD("0.0000054715"));
             transaction.SetData("Hello world !");
             transaction.SetGasLimit(GasLimit.ForTransfer(constants, transaction));
 
@@ -104,7 +104,7 @@ namespace Elrond.SDK.Console
         }
 
         private static async Task QueryAdderSmartContract(IElrondProvider provider, Constants constants, Wallet wallet,
-            AddressValue scAddress)
+            Address scAddress)
         {
             System.Console.WriteLine("QueryAdderSmartContract");
 
@@ -114,7 +114,7 @@ namespace Elrond.SDK.Console
             var queryTransaction = SmartContract.CreateCallSmartContractTransactionRequest(constants, account,
                 scAddress,
                 "getSum",
-                Balance.Zero());
+                TokenAmount.Zero());
 
             var transaction = await queryTransaction.Send(provider, wallet);
             await transaction.WaitForExecution(provider);
@@ -128,7 +128,7 @@ namespace Elrond.SDK.Console
             System.Console.WriteLine("-*-*-*-*-*" + Environment.NewLine);
         }
 
-        private static async Task QueryAuctionSmartContractWithoutAbi(IElrondProvider provider, AddressValue scAddress)
+        private static async Task QueryAuctionSmartContractWithoutAbi(IElrondProvider provider, Address scAddress)
         {
             System.Console.WriteLine("QueryAuctionSmartContractWithoutAbi");
 
@@ -165,12 +165,11 @@ namespace Elrond.SDK.Console
             System.Console.WriteLine("-*-*-*-*-*" + Environment.NewLine);
         }
 
-        private static async Task QueryAuctionSmartContractWithMultiResult(IElrondProvider provider,
-            AddressValue scAddress)
+        private static async Task QueryAuctionSmartContractWithMultiResult(IElrondProvider provider, Address scAddress)
         {
             System.Console.WriteLine("QueryAuctionSmartContractWithMultiResult");
 
-            var abiDefinition = await AbiDefinition.FromJsonFilePath("SmartContracts/auction/auction.abi.json");
+            var abiDefinition = AbiDefinition.FromJsonFilePath("SmartContracts/auction/auction.abi.json");
             var getMinMaxBid = await SmartContract.QuerySmartContractWithAbiDefinition(
                 provider,
                 scAddress,
@@ -202,11 +201,11 @@ namespace Elrond.SDK.Console
             System.Console.WriteLine("-*-*-*-*-*" + Environment.NewLine);
         }
 
-        private static async Task QueryAuctionSmartContractWithAbi(IElrondProvider provider, AddressValue scAddress)
+        private static async Task QueryAuctionSmartContractWithAbi(IElrondProvider provider, Address scAddress)
         {
             System.Console.WriteLine("QueryAuctionSmartContractWithAbi");
 
-            var abiDefinition = await AbiDefinition.FromJsonFilePath("SmartContracts/auction/auction.abi.json");
+            var abiDefinition = AbiDefinition.FromJsonFilePath("SmartContracts/auction/auction.abi.json");
             var getFullAuctionData = await SmartContract.QuerySmartContractWithAbiDefinition(
                 provider,
                 scAddress,
@@ -240,7 +239,7 @@ namespace Elrond.SDK.Console
         }
 
         private static async Task CallAdderSmartContract(IElrondProvider provider, Constants constants, Wallet wallet,
-            AddressValue scAddress)
+            Address scAddress)
         {
             System.Console.WriteLine("CallAdderSmartContract");
             var account = wallet.GetAccount();
@@ -252,7 +251,7 @@ namespace Elrond.SDK.Console
                 account,
                 scAddress,
                 "add",
-                Balance.Zero(),
+                TokenAmount.Zero(),
                 NumericValue.BigIntValue(12)
             );
 
@@ -273,7 +272,7 @@ namespace Elrond.SDK.Console
             System.Console.WriteLine("-*-*-*-*-*" + Environment.NewLine);
         }
 
-        private static async Task<AddressValue> DeploySmartContract(
+        private static async Task<Address> DeploySmartContract(
             IElrondProvider provider,
             Constants constants,
             Wallet wallet,
@@ -283,7 +282,7 @@ namespace Elrond.SDK.Console
             var account = wallet.GetAccount();
             await account.Sync(provider);
 
-            var wasmFile = await Code.FromFilePath(filePath);
+            var wasmFile = Code.FromFilePath(filePath);
             var deployRequest = SmartContract.CreateDeploySmartContractTransactionRequest(
                 constants,
                 account,
@@ -345,13 +344,12 @@ namespace Elrond.SDK.Console
             if (false)
             {
                 System.Console.WriteLine($"[{DateTime.UtcNow:O}] TransferNftToken");
-                var receiver =
-                    AddressValue.FromBech32("erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx");
+                var receiver = Address.FromBech32("erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx");
                 await tokenManager.TransferEsdtToken(wallet, token, receiver, BigInteger.One);
                 System.Console.WriteLine($"[{DateTime.UtcNow:O}] TransferNftToken - Result : Ok");
             }
 
-            var auction = AddressValue.FromBech32("erd1qqqqqqqqqqqqqpgqqfpjhksl9nwruxm6fscs8c85cj6z0dfkmxjqk9pfty");
+            var auction = Address.FromBech32("erd1qqqqqqqqqqqqqpgqqfpjhksl9nwruxm6fscs8c85cj6z0dfkmxjqk9pfty");
 
             var unixTime = (ulong) ((DateTimeOffset) DateTime.Now.AddMinutes(15)).ToUnixTimeSeconds();
             await tokenManager.TransferEsdtTokenToSmartContract(
@@ -360,12 +358,12 @@ namespace Elrond.SDK.Console
                 auction,
                 "auctionToken",
                 BigInteger.One,
-                NumericValue.Balance(Balance.EGLD("0.1")),
-                NumericValue.Balance(Balance.EGLD("2")),
+                NumericValue.TokenAmount(TokenAmount.EGLD("0.1")),
+                NumericValue.TokenAmount(TokenAmount.EGLD("2")),
                 NumericValue.U64Value(unixTime),
                 TokenIdentifierValue.EGLD());
 
-            var abiDefinition = await AbiDefinition.FromJsonFilePath("SmartContracts/auction/auction.abi.json");
+            var abiDefinition = AbiDefinition.FromJsonFilePath("SmartContracts/auction/auction.abi.json");
             var getFullAuctionData = await SmartContract.QuerySmartContractWithAbiDefinition(
                 provider,
                 auction,

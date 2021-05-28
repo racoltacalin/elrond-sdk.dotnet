@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Erdcsharp.Domain.Serializer;
+using Erdcsharp.Domain.Helper;
 using Erdcsharp.Provider.Dtos;
 
 namespace Erdcsharp.Provider

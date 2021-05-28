@@ -1,21 +1,23 @@
 ﻿using System.Threading.Tasks;
-using Erdcsharp.Domain.Values;
 using Erdcsharp.Provider;
 
 namespace Erdcsharp.Domain
 {
     public class Account
     {
-        public AddressValue Address { get; }
-        public Balance Balance { get; private set; }
-        public int Nonce { get; private set; }
+        public Address Address { get; }
+        public TokenAmount Balance { get; private set; }
+        public long Nonce { get; private set; }
         public string UserName { get; private set; }
 
-        public Account(AddressValue address)
+        public Account(Address address)
         {
             Address = address;
             Nonce = 0;
+            Balance = new TokenAmount(0);
+            UserName = null;
         }
+
 
         /// <summary>
         /// Synchronizes account properties (such as nonce, balance) with the ones queried from the Network
@@ -27,7 +29,7 @@ namespace Erdcsharp.Domain
             var accountDto = await provider.GetAccount(Address.Bech32);
             var account = accountDto.Account;
 
-            Balance = new Balance(account.Balance);
+            Balance = new TokenAmount(account.Balance);
             Nonce = account.Nonce;
             UserName = account.Username;
         }

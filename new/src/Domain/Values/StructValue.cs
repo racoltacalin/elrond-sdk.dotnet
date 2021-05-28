@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 using Erdcsharp.Domain.Exceptions;
-using Erdcsharp.Domain.Serializer;
+using Erdcsharp.Domain.Helper;
 
 namespace Erdcsharp.Domain.Values
 {

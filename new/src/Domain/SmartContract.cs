@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Erdcsharp.Cryptography;
 using Erdcsharp.Domain.Codec;
-using Erdcsharp.Domain.Serializer;
+using Erdcsharp.Domain.Helper;
 using Erdcsharp.Domain.Values;
 using Erdcsharp.Provider;
 using Erdcsharp.Provider.Dtos;
@@ -40,7 +40,7 @@ namespace Erdcsharp.Domain
         public static TransactionRequest CreateUpdateSmartContractTransactionRequest(
             Constants constants,
             Account account,
-            AddressValue address)
+            Address address)
         {
             throw new NotImplementedException();
         }
@@ -48,9 +48,9 @@ namespace Erdcsharp.Domain
         public static TransactionRequest CreateCallSmartContractTransactionRequest(
             Constants constants,
             Account account,
-            AddressValue address,
+            Address address,
             string functionName,
-            Balance value,
+            TokenAmount value,
             params IBinaryType[] args)
         {
             var transaction = TransactionRequest.CreateTransaction(account, constants, address, value);
@@ -72,7 +72,7 @@ namespace Erdcsharp.Domain
         /// <param name="ownerAddress">The owner of the Smart Contract</param>
         /// <param name="nonce">The owner nonce used for the deployment transaction</param>
         /// <returns>The smart contract address</returns>
-        public static AddressValue ComputeAddress(AddressValue ownerAddress, long nonce)
+        public static Address ComputeAddress(Address ownerAddress, long nonce)
         {
             var ownerPubKey = Converter.FromHexString(ownerAddress.Hex);
             var initialPadding = new byte[8];
@@ -92,7 +92,7 @@ namespace Erdcsharp.Domain
                 shardSelector);
 
             var erdAddress = Bech32Engine.Encode("erd", addressBytes);
-            return AddressValue.FromBech32(erdAddress);
+            return Address.FromBech32(erdAddress);
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace Erdcsharp.Domain
         /// <returns>The response</returns>
         public static Task<IBinaryType> QuerySmartContractWithAbiDefinition(
             IElrondProvider provider,
-            AddressValue address,
+            Address address,
             AbiDefinition abiDefinition,
             string endpoint,
             params IBinaryType[] args)
@@ -130,7 +130,7 @@ namespace Erdcsharp.Domain
         /// <returns>The response</returns>
         public static async Task<IBinaryType> QuerySmartContract(
             IElrondProvider provider,
-            AddressValue address,
+            Address address,
             TypeValue outputTypeValue,
             string endpoint,
             params IBinaryType[] args)

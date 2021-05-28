@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text;
-using Erdcsharp.Domain.Serializer;
+using Erdcsharp.Domain.Helper;
 
 namespace Erdcsharp.Domain.Values
 {

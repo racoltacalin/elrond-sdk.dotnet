@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using Erdcsharp.Domain.Serializer;
+using Erdcsharp.Domain.Helper;
 
 namespace Erdcsharp.Domain
 {

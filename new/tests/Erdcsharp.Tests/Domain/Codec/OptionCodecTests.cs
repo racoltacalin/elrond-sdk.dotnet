@@ -3,8 +3,9 @@ using Erdcsharp.Domain.Codec;
 using Erdcsharp.Domain.Values;
 using NUnit.Framework;
 
-namespace Elrond_sdk.dotnet.tests.Domain.Codec
+namespace Erdcsharp.Tests.Domain.Codec
 {
+    [TestFixture]
     public class OptionBinaryCodecTests
     {
         private OptionBinaryCodec _sut;

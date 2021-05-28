@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Elrond-sdk.dotnet.csproj" />
+    <ProjectReference Include="..\..\src\Erdcsharp.csproj" />
   </ItemGroup>
 
   <ItemGroup>

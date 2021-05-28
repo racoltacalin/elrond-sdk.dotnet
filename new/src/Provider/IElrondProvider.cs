@@ -11,14 +11,14 @@ namespace Erdcsharp.Provider
 
 
         /// <summary>
-        /// Returns an array of ESDT Tokens that the specified address has interacted with (issued, sent or received).
+        /// Returns an array of Fungible Tokens that the specified address has interacted with (issued, sent or received).
         /// </summary>
         /// <param name="address">The Address to query in bech32 format.</param>
         /// <returns><see cref="ESDTTokenDataDto"/></returns>
         Task<ESDTTokenDataDto> GetEsdtTokens(string address);
 
         /// <summary>
-        /// Returns the balance of an address for specific ESDT Tokens.
+        /// Returns the balance of an address for specific Fungible Tokens.
         /// </summary>
         /// <param name="address">The Address to query in bech32 format.</param>
         /// <param name="tokenIdentifier">The token identifier.</param>

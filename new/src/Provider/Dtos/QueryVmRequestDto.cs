@@ -3,7 +3,7 @@
     public class QueryVmRequestDto
     {
         /// <summary>
-        /// The AddressValue (bech32) of the Smart Contract.
+        /// The Address (bech32) of the Smart Contract.
         /// </summary>
         public string ScAddress { get; set; }
 
@@ -18,7 +18,7 @@
         public string[] Args { get; set; }
 
         /// <summary>
-        /// The AddressValue (bech32) of the caller.
+        /// The Address (bech32) of the caller.
         /// </summary>
         public string Caller { get; set; }
 

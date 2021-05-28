@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Erdcsharp.Domain.Codec;
-using Erdcsharp.Domain.Serializer;
+using Erdcsharp.Domain.Helper;
 using Erdcsharp.Domain.Values;
 using Erdcsharp.Provider;
 using Erdcsharp.Provider.Dtos;
@@ -16,11 +16,11 @@ namespace Erdcsharp.Domain
         private readonly string _chainId;
         private const int TransactionVersion = 4;
 
-        public AddressValue Sender { get; }
+        public Address Sender { get; }
         public long Nonce { get; }
         public long GasPrice { get; }
-        public Balance Value { get; private set; }
-        public AddressValue Receiver { get; private set; }
+        public TokenAmount Value { get; private set; }
+        public Address Receiver { get; private set; }
         public GasLimit GasLimit { get; private set; }
         public string Data { get; private set; }
 
@@ -29,8 +29,8 @@ namespace Erdcsharp.Domain
             _account = account;
             _chainId = constants.ChainId;
             Sender = account.Address;
-            Receiver = AddressValue.Zero();
-            Value = new Balance(0);
+            Receiver = Address.Zero();
+            Value = new TokenAmount(0);
             Nonce = account.Nonce;
             GasLimit = new GasLimit(constants.MinGasLimit);
             GasPrice = constants.MinGasPrice;
@@ -41,8 +41,8 @@ namespace Erdcsharp.Domain
             return new TransactionRequest(account, constants);
         }
 
-        public static TransactionRequest CreateTransaction(Account account, Constants constants, AddressValue receiver,
-            Balance value)
+        public static TransactionRequest CreateTransaction(Account account, Constants constants, Address receiver,
+            TokenAmount value)
         {
             return new TransactionRequest(account, constants)
             {
