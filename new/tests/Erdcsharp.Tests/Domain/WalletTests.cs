@@ -1,10 +1,10 @@
 ﻿using System;
 using Erdcsharp.Domain;
 using Erdcsharp.Domain.Helper;
-using Erdcsharp.Tests.FakeData;
+using Erdcsharp.UnitTests.FakeData;
 using NUnit.Framework;
 
-namespace Erdcsharp.Tests.Domain
+namespace Erdcsharp.UnitTests.Domain
 {
     [TestFixture]
     public class WalletTests
@@ -20,8 +20,6 @@ namespace Erdcsharp.Tests.Domain
         [Test]
         public void TestWalletFactory_Should_Create_Test_Wallets()
         {
-            // Arrange
-
             // Act
             var alice = _walletFactory.Alice.GetAccount().Address;
             var bob = _walletFactory.Bob.GetAccount().Address;

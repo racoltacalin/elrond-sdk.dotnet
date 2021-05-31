@@ -24,11 +24,19 @@ namespace Erdcsharp.Domain
         {
         }
 
+        /// <summary>
+        /// Get the account wallet
+        /// </summary>
+        /// <returns>Account</returns>
         public Account GetAccount()
         {
             return new Account(Address.FromBytes(_publicKey));
         }
 
+        /// <summary>
+        /// Build a wallet
+        /// </summary>
+        /// <param name="privateKey">The private key</param>
         public Wallet(byte[] privateKey)
         {
             var privateKeyParameters = new Ed25519PrivateKeyParameters(privateKey, 0);
@@ -37,6 +45,12 @@ namespace Erdcsharp.Domain
             _privateKey = privateKey;
         }
 
+        /// <summary>
+        /// Derive a wallet from Mnemonic phrase
+        /// </summary>
+        /// <param name="mnemonic">The mnemonic phrase</param>
+        /// <param name="accountIndex">The account index, default 0</param>
+        /// <returns>Wallet</returns>
         public static Wallet DeriveFromMnemonic(string mnemonic, int accountIndex = 0)
         {
             try
@@ -56,11 +70,18 @@ namespace Erdcsharp.Domain
             }
         }
 
+        /// <summary>
+        /// Derive a wallet from a KeyFile and a password
+        /// </summary>
+        /// <param name="keyFile">The KeyFile</param>
+        /// <param name="secretPassword">The password</param>
+        /// <returns>Wallet</returns>
         public static Wallet DeriveFromKeyFile(KeyFile keyFile, string secretPassword)
         {
             var saltBytes = Converter.FromHexString(keyFile.Crypto.Kdfparams.Salt);
             var kdParams = keyFile.Crypto.Kdfparams;
-            var key = SCrypt.Generate(Encoding.UTF8.GetBytes(secretPassword), saltBytes, kdParams.N, kdParams.r, kdParams.p, kdParams.dklen);
+            var key = SCrypt.Generate(Encoding.UTF8.GetBytes(secretPassword), saltBytes, kdParams.N, kdParams.r,
+                kdParams.p, kdParams.dklen);
 
             var rightPartOfKey = key.Skip(16).Take(16).ToArray();
             var leftPartOfKey = key.Take(16).ToArray();
@@ -76,11 +97,21 @@ namespace Erdcsharp.Domain
             return new Wallet(privateKey);
         }
 
+        /// <summary>
+        /// Sign data string with the wallet
+        /// </summary>
+        /// <param name="data">The data to signed</param>
+        /// <returns>Signature</returns>
         public string Sign(string data)
         {
             return Sign(Encoding.UTF8.GetBytes(data));
         }
 
+        /// <summary>
+        /// Sign data with the wallet
+        /// </summary>
+        /// <param name="data">The data to signed</param>
+        /// <returns>Signature</returns>
         public string Sign(byte[] data)
         {
             var parameters = new Ed25519PrivateKeyParameters(_privateKey, 0);
@@ -92,14 +123,74 @@ namespace Erdcsharp.Domain
             return Converter.ToHexString(signature).ToLowerInvariant();
         }
 
+        /// <summary>
+        /// The private key. Do not share
+        /// </summary>
+        /// <returns>Private key</returns>
         public byte[] GetPrivateKey()
         {
             return _privateKey;
         }
 
+        /// <summary>
+        /// The public key
+        /// </summary>
+        /// <returns>Public key</returns>
         public byte[] GetPublicKey()
         {
             return _publicKey;
+        }
+
+        /// <summary>
+        /// Build a key file
+        /// </summary>
+        /// <param name="password">Password</param>
+        /// <returns>KeyFile</returns>
+        public KeyFile BuildKeyFile(string password)
+        {
+            var saltBytes = new byte[32];
+            RngCsp.GetBytes(saltBytes);
+            var ivBytes = new byte[16];
+            RngCsp.GetBytes(ivBytes);
+
+            var salt = Converter.ToHexString(saltBytes).ToLowerInvariant();
+            var iv = Converter.ToHexString(ivBytes).ToLowerInvariant();
+            var kdParams = new Crypto.KdfSructure
+            {
+                dklen = 32,
+                Salt = salt,
+                N = 4096,
+                r = 8,
+                p = 1
+            };
+
+            var encodedPassword = Encoding.UTF8.GetBytes(password);
+            var key = SCrypt.Generate(encodedPassword, saltBytes, kdParams.N, kdParams.r, kdParams.p, kdParams.dklen);
+            var leftPart = key.Take(16).ToArray();
+            var rightPart = key.Skip(16).Take(16).ToArray();
+            var cipher = EncryptAes128Ctr(_privateKey, leftPart, ivBytes);
+            var mac = CreateSha256Signature(rightPart, cipher);
+
+            var keyFile = new KeyFile
+            {
+                Version = 4,
+                Id = Guid.NewGuid().ToString(),
+                Address = Converter.ToHexString(_publicKey).ToLowerInvariant(),
+                Bech32 = Bech32Engine.Encode(Constants.Hrp, _publicKey),
+                Crypto = new Crypto
+                {
+                    Ciphertext = cipher,
+                    Cipherparams = new Crypto.CipherStructure()
+                    {
+                        Iv = iv
+                    },
+                    Cipher = "aes-128-ctr",
+                    Kdf = "scrypt",
+                    Kdfparams = kdParams,
+                    Mac = mac
+                }
+            };
+            return keyFile;
         }
 
         private static string CreateSha256Signature(byte[] key, string targetText)
@@ -118,52 +209,6 @@ namespace Erdcsharp.Domain
         {
             var output = AesCtr.Encrypt(key, iv, data);
             return Converter.ToHexString(output).ToLowerInvariant();
-        }
-
-        public KeyFile BuildKeyFile(string password)
-        {
-            var saltBytes = new byte[32];
-            RngCsp.GetBytes(saltBytes);
-            var ivBytes = new byte[16];
-            RngCsp.GetBytes(ivBytes);
-
-            var salt = Converter.ToHexString(saltBytes).ToLowerInvariant();
-            var iv = Converter.ToHexString(ivBytes).ToLowerInvariant();
-            var kdParams = new Kdfparams
-            {
-                dklen = 32,
-                Salt = salt,
-                N = 4096,
-                r = 8,
-                p = 1
-            };
-
-            var key = SCrypt.Generate(Encoding.UTF8.GetBytes(password), saltBytes, kdParams.N, kdParams.r, kdParams.p, kdParams.dklen);
-            var leftPart = key.Take(16).ToArray();
-            var rightPart = key.Skip(16).Take(16).ToArray();
-            var cipher = EncryptAes128Ctr(_privateKey, leftPart, ivBytes);
-            var mac = CreateSha256Signature(rightPart, cipher);
-
-            var keyFile = new KeyFile
-            {
-                Version = 4,
-                Id = Guid.NewGuid().ToString(),
-                Address = Converter.ToHexString(_publicKey).ToLowerInvariant(),
-                Bech32 = Bech32Engine.Encode("erd", _publicKey),
-                Crypto = new Crypto
-                {
-                    Ciphertext = cipher,
-                    Cipherparams = new Cipherparams()
-                    {
-                        Iv = iv
-                    },
-                    Cipher = "aes-128-ctr",
-                    Kdf = "scrypt",
-                    Kdfparams = kdParams,
-                    Mac = mac
-                }
-            };
-            return keyFile;
         }
     }
 }

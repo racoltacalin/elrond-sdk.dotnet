@@ -53,15 +53,20 @@ namespace Erdcsharp.Domain.Values
             return builder.ToString();
         }
 
-        public new string ToJSON()
+        public override T ToObject<T>()
+        {
+            return JsonSerializerWrapper.Deserialize<T>(ToJson());
+        }
+
+        public override string ToJson()
         {
             var dic = new Dictionary<string, object>();
             foreach (var field in Fields)
             {
                 if (field.Value.Type.BinaryType == TypeValue.BinaryTypes.Struct)
                 {
-                    var json = field.Value.ToJSON();
-                    var jsonObject = JsonSerializer.Deserialize<object>(json);
+                    var json = field.Value.ToJson();
+                    var jsonObject = JsonSerializerWrapper.Deserialize<object>(json);
                     dic.Add(field.Name, jsonObject);
                 }
                 else
@@ -70,7 +75,7 @@ namespace Erdcsharp.Domain.Values
                 }
             }
 
-            return JsonSerializer.Serialize(dic);
+            return JsonSerializerWrapper.Serialize(dic);
         }
     }
 }

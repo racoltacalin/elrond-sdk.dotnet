@@ -14,10 +14,9 @@ namespace Erdcsharp.Domain
         {
             Address = address;
             Nonce = 0;
-            Balance = new TokenAmount(0);
+            Balance = TokenAmount.Zero();
             UserName = null;
         }
-
 
         /// <summary>
         /// Synchronizes account properties (such as nonce, balance) with the ones queried from the Network
@@ -29,7 +28,7 @@ namespace Erdcsharp.Domain
             var accountDto = await provider.GetAccount(Address.Bech32);
             var account = accountDto.Account;
 
-            Balance = new TokenAmount(account.Balance);
+            Balance = TokenAmount.From(account.Balance, Token.EGLD());
             Nonce = account.Nonce;
             UserName = account.Username;
         }

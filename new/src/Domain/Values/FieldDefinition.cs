@@ -1,6 +1,4 @@
-﻿using Erdcsharp.Domain.Values;
-
-namespace Erdcsharp.Domain
+﻿namespace Erdcsharp.Domain.Values
 {
     public class FieldDefinition
     {

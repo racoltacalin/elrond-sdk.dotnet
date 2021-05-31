@@ -1,4 +1,6 @@
-﻿namespace Erdcsharp.Domain.Values
+﻿using Erdcsharp.Domain.Helper;
+
+namespace Erdcsharp.Domain.Values
 {
     public class OptionValue : BaseBinaryValue
     {
@@ -31,9 +33,14 @@
             return IsSet() ? Value.ToString() : "";
         }
 
-        new string ToJSON()
+        public override T ToObject<T>()
         {
-            return IsSet() ? Value.ToJSON() : "{}";
+            return JsonSerializerWrapper.Deserialize<T>(ToJson());
+        }
+
+        public override string ToJson()
+        {
+            return IsSet() ? Value.ToJson() : "{}";
         }
     }
 }

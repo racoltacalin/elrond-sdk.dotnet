@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Numerics;
 using System.Text;
 using dotnetstandard_bip32;
@@ -79,6 +80,16 @@ namespace Erdcsharp.Domain.Helper
             }
 
             return bytes;
+        }
+
+        public static string ToHexString(string utf8Value)
+        {
+            return ToHexString(Encoding.UTF8.GetBytes(utf8Value));
+        }
+
+        public static string ToBase64String(string value)
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
         }
     }
 }

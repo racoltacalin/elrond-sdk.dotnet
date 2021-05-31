@@ -8,6 +8,6 @@
 
         T ToObject<T>();
 
-        string ToJSON();
+        string ToJson();
     }
 }

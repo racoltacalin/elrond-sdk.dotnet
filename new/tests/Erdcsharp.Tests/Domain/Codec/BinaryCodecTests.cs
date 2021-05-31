@@ -2,7 +2,7 @@
 using Erdcsharp.Domain.Values;
 using NUnit.Framework;
 
-namespace Erdcsharp.Tests.Domain.Codec
+namespace Erdcsharp.UnitTests.Domain.Codec
 {
     [TestFixture]
     public class BinaryCodecTests

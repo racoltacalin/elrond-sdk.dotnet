@@ -2,9 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <RootNamespace>Erdcsharp.Tests</RootNamespace>
+    <RootNamespace>Elrond_sdk.dotnet.tests</RootNamespace>
     <IsPackable>false</IsPackable>
-    <AssemblyName>Erdcsharp.Tests</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,18 +15,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Erdcsharp.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="FakeData\KeyFiles\alice.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="FakeData\KeyFiles\bob.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="FakeData\KeyFiles\carol.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

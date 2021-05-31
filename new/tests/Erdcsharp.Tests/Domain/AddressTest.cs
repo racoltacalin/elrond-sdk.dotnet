@@ -1,9 +1,10 @@
 ﻿using System;
 using Erdcsharp.Domain;
 using Erdcsharp.Domain.Exceptions;
+using Erdcsharp.UnitTests.FakeData;
 using NUnit.Framework;
 
-namespace Erdcsharp.Tests.Domain
+namespace Erdcsharp.UnitTests.Domain
 {
     [TestFixture]
     public class AddressTest
@@ -12,31 +13,31 @@ namespace Erdcsharp.Tests.Domain
         public void FromBech32_Should_Create_Address()
         {
             // Act
-            var address = Address.FromBech32(FakeData.FakeData.AliceBech32);
+            var address = Address.FromBech32(TestData.AliceBech32);
 
             // Assert
-            Assert.That(address.Hex.Equals(FakeData.FakeData.AliceHex, StringComparison.CurrentCultureIgnoreCase));
-            Assert.That(address.Bech32.Equals(FakeData.FakeData.AliceBech32, StringComparison.CurrentCultureIgnoreCase));
+            Assert.That(address.Hex.Equals(TestData.AliceHex, StringComparison.CurrentCultureIgnoreCase));
+            Assert.That(address.Bech32.Equals(TestData.AliceBech32, StringComparison.CurrentCultureIgnoreCase));
         }
 
         [Test]
         public void FromHex_Should_Create_Address()
         {
             // Act
-            var address = Address.FromHex(FakeData.FakeData.AliceHex);
+            var address = Address.FromHex(TestData.AliceHex);
 
             // Assert
-            Assert.That(address.Hex.Equals(FakeData.FakeData.AliceHex, StringComparison.CurrentCultureIgnoreCase));
-            Assert.That(address.Bech32.Equals(FakeData.FakeData.AliceBech32, StringComparison.CurrentCultureIgnoreCase));
+            Assert.That(address.Hex.Equals(TestData.AliceHex, StringComparison.CurrentCultureIgnoreCase));
+            Assert.That(address.Bech32.Equals(TestData.AliceBech32, StringComparison.CurrentCultureIgnoreCase));
         }
 
         [Test]
         public void EqualTo_Should_Test_Equality()
         {
             // Arrange
-            var aliceFoo = Address.FromHex(FakeData.FakeData.AliceHex);
-            var aliceBar = Address.FromBech32(FakeData.FakeData.AliceBech32);
-            var bob= Address.FromHex(FakeData.FakeData.BobHex);
+            var aliceFoo = Address.FromHex(TestData.AliceHex);
+            var aliceBar = Address.FromBech32(TestData.AliceBech32);
+            var bob= Address.FromHex(TestData.BobHex);
 
             // Assert
             Assert.That(aliceBar, Is.EqualTo(aliceFoo));

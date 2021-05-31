@@ -4,7 +4,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace Erdcsharp.Domain.Helper
 {
-    public class JsonSerializer
+    public class JsonSerializerWrapper
     {
         public static string Serialize(object value)
         {

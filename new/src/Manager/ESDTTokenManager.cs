@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Erdcsharp.Domain;
+using Erdcsharp.Domain.Exceptions;
 using Erdcsharp.Domain.Helper;
 using Erdcsharp.Domain.Values;
 using Erdcsharp.Provider;
@@ -18,31 +19,81 @@ namespace Erdcsharp.Manager
     public class EsdtTokenManager : IEsdtTokenManager
     {
         private readonly IElrondProvider _provider;
-        private Constants _constants;
+        private readonly NetworkConfig _networkConfig;
 
-        public EsdtTokenManager(IElrondProvider provider)
+        public EsdtTokenManager(IElrondProvider provider, NetworkConfig networkConfig = null)
         {
             _provider = provider;
+            //TODO : Find a better way
+            if (networkConfig == null)
+                networkConfig = NetworkConfig.GetFromNetwork(provider).GetAwaiter().GetResult();
+            _networkConfig = networkConfig;
+        }
+
+        public async Task<string> IssueFungibleToken(Wallet wallet, Token token, BigInteger initialSupply)
+        {
+            var account = wallet.GetAccount();
+            await account.Sync(_provider);
+            var request = EsdtTokenTransactionRequest.IssueEsdtTransactionRequest(
+                _networkConfig,
+                account,
+                token.Name,
+                token.Ticker,
+                initialSupply,
+                token.DecimalPrecision);
+
+            var transaction = await request.Send(_provider, wallet);
+
+            await transaction.AwaitExecuted(_provider);
+            transaction.EnsureTransactionSuccess();
+            await transaction.AwaitNotarized(_provider);
+
+            var tokenIdentifierValue = transaction.GetSmartContractResult<TokenIdentifierValue>(
+                TypeValue.TokenIdentifierValue,
+                1,
+                1);
+
+            return tokenIdentifierValue.Value;
         }
 
         public async Task<string> IssueNonFungibleToken(Wallet wallet, string tokenName, string tokenTicker)
         {
             var account = wallet.GetAccount();
-            var constants = await GetConstants();
             await account.Sync(_provider);
             var request = EsdtTokenTransactionRequest.IssueNonFungibleTokenTransactionRequest(
-                constants,
+                _networkConfig,
                 account,
                 tokenName,
                 tokenTicker);
             var transaction = await request.Send(_provider, wallet);
 
-            await transaction.WaitForExecution(_provider);
+            await transaction.AwaitExecuted(_provider);
             transaction.EnsureTransactionSuccess();
+            await transaction.AwaitNotarized(_provider);
 
             var tokenIdentifierValue =
-                transaction.GetSmartContractResult(new[] {TypeValue.TokenIdentifierValue}).Single();
-            return tokenIdentifierValue.ValueOf<TokenIdentifierValue>().TokenIdentifier;
+                transaction.GetSmartContractResult<TokenIdentifierValue>(TypeValue.TokenIdentifierValue, 0, 1);
+            return tokenIdentifierValue.Value;
+        }
+
+        public async Task<string> IssueSemiFungibleToken(Wallet wallet, string tokenName, string tokenTicker)
+        {
+            var account = wallet.GetAccount();
+            await account.Sync(_provider);
+            var request = EsdtTokenTransactionRequest.IssueSemiFungibleTokenTransactionRequest(
+                _networkConfig,
+                account,
+                tokenName,
+                tokenTicker);
+            var transaction = await request.Send(_provider, wallet);
+
+            await transaction.AwaitExecuted(_provider);
+            transaction.EnsureTransactionSuccess();
+            await transaction.AwaitNotarized(_provider);
+
+            var tokenIdentifierValue =
+                transaction.GetSmartContractResult<TokenIdentifierValue>(TypeValue.TokenIdentifierValue, 0, 1);
+            return tokenIdentifierValue.Value;
         }
 
         public async Task<List<string>> GetSpecialRole(string tokenIdentifier)
@@ -50,38 +101,40 @@ namespace Erdcsharp.Manager
             var response = await _provider.QueryVm(new QueryVmRequestDto
             {
                 FuncName = "getSpecialRoles",
-                ScAddress = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u",
+                ScAddress = Constants.SmartContractAddress.EsdtSmartContract,
                 Args = new[]
                 {
                     Converter.ToHexString(TokenIdentifierValue.From(tokenIdentifier).Buffer)
                 }
             });
 
-            return response.Data.ReturnData.Select(Convert.FromBase64String)
-                .Select(decoded => Encoding.UTF8.GetString(decoded)).ToList();
+            return response.Data.ReturnData
+                .Select(Convert.FromBase64String)
+                .Select(decoded => Encoding.UTF8.GetString(decoded))
+                .ToList();
         }
 
         public async Task SetSpecialRole(Wallet wallet, string tokenIdentifier, params string[] roles)
         {
             var account = wallet.GetAccount();
-            var constants = await GetConstants();
             await account.Sync(_provider);
             var request = EsdtTokenTransactionRequest.SetSpecialRoleTransactionRequest(
-                constants,
+                _networkConfig,
                 account,
                 account.Address,
                 tokenIdentifier,
                 roles
             );
             var transaction = await request.Send(_provider, wallet);
-            await transaction.WaitForExecution(_provider);
+            await transaction.AwaitExecuted(_provider);
             transaction.EnsureTransactionSuccess();
-            await Task.Delay(6 * 5000); // Hack to prevent issue when trying to create a token
+            await transaction.AwaitNotarized(_provider);
         }
 
-        public async Task<EsdtToken> CreateNftToken(
+        public async Task<ulong> CreateNftToken(
             Wallet wallet,
             string tokenIdentifier,
+            BigInteger quantity,
             string tokenName,
             ushort royalties,
             Dictionary<string, string> attributes,
@@ -89,12 +142,12 @@ namespace Erdcsharp.Manager
             byte[] hash = null)
         {
             var account = wallet.GetAccount();
-            var constants = await GetConstants();
             await account.Sync(_provider);
             var request = EsdtTokenTransactionRequest.CreateEsdtNftTokenTransactionRequest(
-                constants,
+                _networkConfig,
                 account,
                 tokenIdentifier,
+                quantity,
                 tokenName,
                 royalties,
                 hash,
@@ -103,59 +156,74 @@ namespace Erdcsharp.Manager
             );
 
             var transaction = await request.Send(_provider, wallet);
-            await transaction.WaitForExecution(_provider);
+            await transaction.AwaitExecuted(_provider);
             transaction.EnsureTransactionSuccess();
+            await transaction.AwaitNotarized(_provider);
 
-            var tokenId = transaction.GetSmartContractResult(new[] {TypeValue.U64TypeValue}).Single();
-            var nonce = (ulong) tokenId.ValueOf<NumericValue>().Number;
-
-            return new EsdtToken
-            {
-                Name = tokenName,
-                TokenType = EsdtToken.EsdtTokenType.NonFungible,
-                TokenIdentifier = TokenIdentifierValue.From(tokenIdentifier),
-                Creator = account.Address,
-                TokenId = nonce,
-                Royalties = royalties,
-                Attributes = attributes,
-                Hash = hash,
-                Uris = uris
-            };
+            var nonce = transaction.GetSmartContractResult<NumericValue>(TypeValue.U64TypeValue, 0, 1);
+            return (ulong) nonce.Number;
         }
 
-        public async Task<EsdtToken> GetNftToken(Address address, string tokenIdentifier, ulong tokenId)
+        public async Task<IEnumerable<EsdtToken>> GetEsdtTokens(Address address)
+        {
+            var tokens = new List<EsdtToken>();
+            var esdtNftToken = await _provider.GetEsdtTokens(address.Bech32);
+            foreach (var token in esdtNftToken.Esdts)
+            {
+                var tokenIdentifier = token.Key.Substring(0, token.Key.IndexOf('-') + 7);
+                var properties = await EsdtToken.EsdtTokenProperties.FromNetwork(_provider, tokenIdentifier);
+                var esdt = EsdtToken.From(token.Value, properties);
+                tokens.Add(esdt);
+            }
+
+            return tokens;
+        }
+
+        public async Task<EsdtToken> GetEsdtFungibleToken(Address address, string tokenIdentifier)
+        {
+            var esdtNftToken = await _provider.GetEsdtToken(address.Bech32, tokenIdentifier);
+            var properties = await EsdtToken.EsdtTokenProperties.FromNetwork(_provider, tokenIdentifier);
+
+            return EsdtToken.From(esdtNftToken, properties);
+        }
+
+        public async Task<EsdtToken> GetEsdtNonFungibleToken(Address address, string tokenIdentifier, ulong tokenId)
         {
             var esdtNftToken = await _provider.GetEsdtNftToken(address.Bech32, tokenIdentifier, tokenId);
-            return EsdtToken.From(esdtNftToken);
+            var properties = await EsdtToken.EsdtTokenProperties.FromNetwork(_provider, tokenIdentifier);
+            return EsdtToken.From(esdtNftToken, properties);
         }
 
         public async Task TransferEsdtToken(Wallet wallet, EsdtToken token, Address receiver, BigInteger quantity)
         {
             var account = wallet.GetAccount();
-            var constants = await GetConstants();
+            var tokenInAccount = await GetEsdtFungibleToken(account.Address, token.TokenIdentifier.Value);
+            if (tokenInAccount.Balance < quantity)
+                throw new InsufficientFundException(tokenInAccount.TokenIdentifier.Value);
+
             await account.Sync(_provider);
 
             TransactionRequest request;
             switch (token.TokenType)
             {
-                case EsdtToken.EsdtTokenType.Fungible:
+                case EsdtTokenType.FungibleESDT:
                     request = EsdtTokenTransactionRequest.TransferEsdtTransactionRequest(
-                        constants,
+                        _networkConfig,
                         account,
                         receiver,
-                        token.TokenIdentifier.TokenIdentifier,
+                        token.TokenIdentifier.Value,
                         quantity
                     );
 
                     break;
-                case EsdtToken.EsdtTokenType.SemiFungible:
-                case EsdtToken.EsdtTokenType.NonFungible:
+                case EsdtTokenType.SemiFungibleESDT:
+                case EsdtTokenType.NonFungibleESDT:
                     request = EsdtTokenTransactionRequest.TransferEsdtNftTransactionRequest(
-                        constants,
+                        _networkConfig,
                         account,
                         receiver,
-                        token.TokenIdentifier.TokenIdentifier,
-                        token.TokenId,
+                        token.TokenIdentifier.Value,
+                        token.TokenData.TokenId,
                         quantity);
                     break;
                 default:
@@ -163,37 +231,42 @@ namespace Erdcsharp.Manager
             }
 
             var transaction = await request.Send(_provider, wallet);
-            await transaction.WaitForExecution(_provider);
+            await transaction.AwaitExecuted(_provider);
             transaction.EnsureTransactionSuccess();
+            await transaction.AwaitNotarized(_provider);
         }
 
-        public async Task TransferEsdtTokenToSmartContract(Wallet wallet, EsdtToken token, Address smartContract,
-            string functionName, BigInteger quantity, params IBinaryType[] args)
+        public async Task TransferEsdtTokenToSmartContract(
+            Wallet wallet,
+            EsdtToken token,
+            Address smartContract,
+            string functionName,
+            BigInteger quantity,
+            params IBinaryType[] args)
         {
             var account = wallet.GetAccount();
-            var constants = await GetConstants();
             await account.Sync(_provider);
 
             TransactionRequest request;
             switch (token.TokenType)
             {
-                case EsdtToken.EsdtTokenType.Fungible:
+                case EsdtTokenType.FungibleESDT:
                     request = EsdtTokenTransactionRequest.TransferEsdtTransactionRequest(
-                        constants,
+                        _networkConfig,
                         account,
                         smartContract,
-                        token.TokenIdentifier.TokenIdentifier,
+                        token.TokenIdentifier.Value,
                         quantity
                     );
                     break;
-                case EsdtToken.EsdtTokenType.SemiFungible:
-                case EsdtToken.EsdtTokenType.NonFungible:
+                case EsdtTokenType.SemiFungibleESDT:
+                case EsdtTokenType.NonFungibleESDT:
                     request = EsdtTokenTransactionRequest.TransferEsdtNftTransactionRequest(
-                        constants,
+                        _networkConfig,
                         account,
                         smartContract,
-                        token.TokenIdentifier.TokenIdentifier,
-                        token.TokenId,
+                        token.TokenIdentifier.Value,
+                        token.TokenData.TokenId,
                         quantity);
                     break;
                 default:
@@ -207,13 +280,9 @@ namespace Erdcsharp.Manager
 
             var transaction = await request.Send(_provider, wallet);
 
-            await transaction.WaitForExecution(_provider);
+            await transaction.AwaitExecuted(_provider);
             transaction.EnsureTransactionSuccess();
-        }
-
-        private async Task<Constants> GetConstants()
-        {
-            return _constants ?? await Constants.GetFromNetwork(_provider);
+            await transaction.AwaitNotarized(_provider);
         }
     }
 }

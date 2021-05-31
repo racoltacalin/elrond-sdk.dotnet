@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Erdcsharp.Domain.Helper;
 using Erdcsharp.Domain.Values;
 
 namespace Erdcsharp.Domain
@@ -9,7 +10,7 @@ namespace Erdcsharp.Domain
     public class EsdtTokenTransactionRequest
     {
         private static readonly Address EsdtNftAddress =
-            Address.FromBech32("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u");
+            Address.FromBech32(Constants.SmartContractAddress.EsdtSmartContract);
 
         private const string Issue = "issue";
         private const string IssueSemiFungible = "issueSemiFungible";
@@ -51,9 +52,9 @@ namespace Erdcsharp.Domain
         }
 
         /// <summary>
-        /// Issue an Fungible Token
+        /// Issue an FungibleESDT Token
         /// </summary>
-        /// <param name="constants"></param>
+        /// <param name="networkConfig"></param>
         /// <param name="account"></param>
         /// <param name="tokenName">The token name, length between 3 and 20 characters (alphanumeric characters only)</param>
         /// <param name="tokenTicker">The token ticker, length between 3 and 10 characters (alphanumeric UPPERCASE only)</param>
@@ -61,15 +62,15 @@ namespace Erdcsharp.Domain
         /// <param name="numberOfDecimals">Number of decimals, should be a numerical value between 0 and 18</param>
         /// <returns>The transaction request</returns>
         public static TransactionRequest IssueEsdtTransactionRequest(
-            Constants constants,
+            NetworkConfig networkConfig,
             Account account,
             string tokenName,
             string tokenTicker,
             BigInteger initialSupply,
-            ushort numberOfDecimals)
+            int numberOfDecimals)
         {
-            var balance = constants.ChainId == "T" ? TokenAmount.EGLD("5") : TokenAmount.EGLD("0.05");
-            var transaction = SmartContract.CreateCallSmartContractTransactionRequest(constants,
+            var balance = networkConfig.ChainId == "T" ? TokenAmount.EGLD("5") : TokenAmount.EGLD("0.05");
+            var transaction = TransactionRequest.CreateCallSmartContractTransactionRequest(networkConfig,
                 account,
                 EsdtNftAddress,
                 Issue,
@@ -77,7 +78,7 @@ namespace Erdcsharp.Domain
                 BytesValue.FromUtf8(tokenName),
                 BytesValue.FromUtf8(tokenTicker),
                 NumericValue.BigUintValue(initialSupply),
-                NumericValue.U16Value(numberOfDecimals));
+                NumericValue.I32Value(numberOfDecimals));
 
             transaction.SetGasLimit(new GasLimit(60000000));
 
@@ -87,21 +88,21 @@ namespace Erdcsharp.Domain
         /// <summary>
         /// In order to be able to perform actions over a token, one needs to have roles assigned.
         /// </summary>
-        /// <param name="constants"></param>
+        /// <param name="networkConfig"></param>
         /// <param name="account"></param>
         /// <param name="receiver"></param>
         /// <param name="tokenIdentifier"></param>
         /// <param name="roles"></param>
         /// <returns></returns>
         public static TransactionRequest SetSpecialRoleTransactionRequest(
-            Constants constants,
+            NetworkConfig networkConfig,
             Account account,
             Address receiver,
             string tokenIdentifier,
             params string[] roles)
         {
-            var transaction = SmartContract.CreateCallSmartContractTransactionRequest(
-                constants,
+            var transaction = TransactionRequest.CreateCallSmartContractTransactionRequest(
+                networkConfig,
                 account,
                 EsdtNftAddress,
                 SetSpecialRole,
@@ -118,19 +119,19 @@ namespace Erdcsharp.Domain
         /// <summary>
         /// Issue a Non fungible token
         /// </summary>
-        /// <param name="constants"></param>
+        /// <param name="networkConfig"></param>
         /// <param name="account"></param>
         /// <param name="tokenName">The token name, length between 3 and 20 characters (alphanumeric characters only)</param>
         /// <param name="tokenTicker">The token ticker, length between 3 and 10 characters (alphanumeric UPPERCASE only)</param>
         /// <returns>The transaction request</returns>
         public static TransactionRequest IssueNonFungibleTokenTransactionRequest(
-            Constants constants,
+            NetworkConfig networkConfig,
             Account account,
             string tokenName,
             string tokenTicker)
         {
-            var balance = constants.ChainId == "T" ? TokenAmount.EGLD("5") : TokenAmount.EGLD("0.05");
-            var transaction = SmartContract.CreateCallSmartContractTransactionRequest(constants,
+            var balance = networkConfig.ChainId == "T" ? TokenAmount.EGLD("5") : TokenAmount.EGLD("0.05");
+            var transaction = TransactionRequest.CreateCallSmartContractTransactionRequest(networkConfig,
                 account,
                 EsdtNftAddress,
                 IssueNonFungible,
@@ -146,19 +147,19 @@ namespace Erdcsharp.Domain
         /// <summary>
         /// Issue a Semi fungible token
         /// </summary>
-        /// <param name="constants"></param>
+        /// <param name="networkConfig"></param>
         /// <param name="account"></param>
         /// <param name="tokenName">The token name, length between 3 and 20 characters (alphanumeric characters only)</param>
         /// <param name="tokenTicker">The token ticker, length between 3 and 10 characters (alphanumeric UPPERCASE only)</param>
         /// <returns>The transaction request</returns>
         public static TransactionRequest IssueSemiFungibleTokenTransactionRequest(
-            Constants constants,
+            NetworkConfig networkConfig,
             Account account,
             string tokenName,
             string tokenTicker)
         {
-            var balance = constants.ChainId == "T" ? TokenAmount.EGLD("5") : TokenAmount.EGLD("0.05");
-            var transaction = SmartContract.CreateCallSmartContractTransactionRequest(constants,
+            var balance = networkConfig.ChainId == "T" ? TokenAmount.EGLD("5") : TokenAmount.EGLD("0.05");
+            var transaction = TransactionRequest.CreateCallSmartContractTransactionRequest(networkConfig,
                 account,
                 EsdtNftAddress,
                 IssueSemiFungible,
@@ -174,7 +175,7 @@ namespace Erdcsharp.Domain
         /// <summary>
         /// Perform a ESDTNFT Transfer
         /// </summary>
-        /// <param name="constants"></param>
+        /// <param name="networkConfig"></param>
         /// <param name="account"></param>
         /// <param name="receiver">The destination address</param>
         /// <param name="tokenIdentifier">The token identifier</param>
@@ -182,20 +183,20 @@ namespace Erdcsharp.Domain
         /// <param name="quantity">Should be 1 if NFT</param>
         /// <returns>The transaction request</returns>
         public static TransactionRequest TransferEsdtNftTransactionRequest(
-            Constants constants,
+            NetworkConfig networkConfig,
             Account account,
             Address receiver,
             string tokenIdentifier,
-            ulong tokenId,
+            BigInteger tokenId,
             BigInteger quantity)
         {
-            var transaction = SmartContract.CreateCallSmartContractTransactionRequest(constants,
+            var transaction = TransactionRequest.CreateCallSmartContractTransactionRequest(networkConfig,
                 account,
                 account.Address,
                 EsdtNftTransfer,
                 TokenAmount.Zero(),
                 TokenIdentifierValue.From(tokenIdentifier),
-                NumericValue.U64Value(tokenId),
+                NumericValue.BigUintValue(tokenId),
                 NumericValue.BigUintValue(quantity),
                 receiver
             );
@@ -207,23 +208,23 @@ namespace Erdcsharp.Domain
         }
 
         /// <summary>
-        /// Perform a Fungible Transfer
+        /// Perform a FungibleESDT Transfer
         /// </summary>
-        /// <param name="constants"></param>
+        /// <param name="networkConfig"></param>
         /// <param name="account"></param>
         /// <param name="receiver">Destination address</param>
         /// <param name="tokenIdentifier">The token identifier</param>
         /// <param name="quantity">Quantity to transfer</param>
         /// <returns>The transaction request</returns>
         public static TransactionRequest TransferEsdtTransactionRequest(
-            Constants constants,
+            NetworkConfig networkConfig,
             Account account,
             Address receiver,
             string tokenIdentifier,
             BigInteger quantity)
         {
-            var transaction = SmartContract.CreateCallSmartContractTransactionRequest(
-                constants,
+            var transaction = TransactionRequest.CreateCallSmartContractTransactionRequest(
+                networkConfig,
                 account,
                 receiver,
                 EsdtTransfer,
@@ -239,9 +240,10 @@ namespace Erdcsharp.Domain
         /// <summary>
         /// Create a NFT token
         /// </summary>
-        /// <param name="constants"></param>
+        /// <param name="networkConfig"></param>
         /// <param name="account">Account with ESDTRoleNFTCreate role</param>
         /// <param name="tokenIdentifier">The token identifier</param>
+        /// <param name="quantity">Should be one if NFT</param>
         /// <param name="name">The name of the NFT or SemiFungible</param>
         /// <param name="royalties">Allows the creator to receive royalties for any transaction involving their NFT (Base format is a numeric value between 0 an 10000 (0 meaning 0% and 10000 meaning 100%)</param>
         /// <param name="hash">Arbitrary field that should contain the hash of the NFT metadata.</param>
@@ -249,9 +251,10 @@ namespace Erdcsharp.Domain
         /// <param name="uris">Minimum one field that should contain the Uniform Resource Identifier. Can be a URL to a media file or something similar.</param>
         /// <returns></returns>
         public static TransactionRequest CreateEsdtNftTokenTransactionRequest(
-            Constants constants,
+            NetworkConfig networkConfig,
             Account account,
             string tokenIdentifier,
+            BigInteger quantity,
             string name,
             ushort royalties,
             byte[] hash,
@@ -267,14 +270,14 @@ namespace Erdcsharp.Domain
 
             var attributeValue = string.Join(";", attributes.Select(x => x.Key + ":" + x.Value).ToArray());
             var urisValue = uris.Select(u => (IBinaryType) BytesValue.FromUtf8(u.AbsoluteUri)).ToArray();
-            var transaction = SmartContract.CreateCallSmartContractTransactionRequest(
-                constants,
+            var transaction = TransactionRequest.CreateCallSmartContractTransactionRequest(
+                networkConfig,
                 account,
                 account.Address,
                 EsdtNftCreate,
                 TokenAmount.Zero(),
                 TokenIdentifierValue.From(tokenIdentifier),
-                NumericValue.BigUintValue(1),
+                NumericValue.BigUintValue(quantity),
                 TokenIdentifierValue.From(name),
                 NumericValue.U16Value(royalties),
                 BytesValue.FromBuffer(hash ?? new byte[0]),
@@ -284,7 +287,7 @@ namespace Erdcsharp.Domain
 
             const int storePerByte = 50000;
             // Transaction payload cost: Data field length * 1500 (GasPerDataByte = 1500)
-            var transactionCost = Convert.FromBase64String(transaction.Data).Length * constants.GasPerDataByte;
+            var transactionCost = Convert.FromBase64String(transaction.Data).Length * networkConfig.GasPerDataByte;
             // Storage cost: Size of NFT data * 50000 (StorePerByte = 50000)
             var storageCost = (string.IsNullOrEmpty(attributeValue)
                                   ? 0

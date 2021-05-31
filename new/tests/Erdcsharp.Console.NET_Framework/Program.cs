@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Erdcsharp.Configuration;
 using Erdcsharp.Domain;
 using Erdcsharp.Provider;
 
@@ -13,9 +14,9 @@ namespace Erdcsharp.Console.NET_Framework
 
         public static async Task Main(string[] args)
         {
-            var provider = new ElrondProvider(new HttpClient { BaseAddress = new Uri("https://testnet-gateway.elrond.com") });
+            var provider = new ElrondProvider(new HttpClient(), new ElrondNetworkConfiguration(Network.TestNet));
             var wallet = new Wallet(AliceSecretHex);
-            var constants = await Constants.GetFromNetwork(provider);
+            var constants = await NetworkConfig.GetFromNetwork(provider);
 
             await SynchronizingNetworkParameter(provider);
             await SynchronizingAnAccountObject(provider, wallet.GetAccount());
@@ -27,7 +28,7 @@ namespace Erdcsharp.Console.NET_Framework
         {
             System.Console.WriteLine("SynchronizingNetworkParameter");
 
-            var constants = await Constants.GetFromNetwork(provider);
+            var constants = await NetworkConfig.GetFromNetwork(provider);
 
             System.Console.WriteLine("MinGasPrice {0}", constants.MinGasPrice);
             System.Console.WriteLine("ChainId {0}", constants.ChainId);
@@ -47,8 +48,7 @@ namespace Erdcsharp.Console.NET_Framework
             System.Console.WriteLine("-*-*-*-*-*" + Environment.NewLine);
         }
 
-        private static async Task CreatingValueTransferTransactions(IElrondProvider provider, Constants constants,
-            Wallet wallet)
+        private static async Task CreatingValueTransferTransactions(IElrondProvider provider, NetworkConfig networkConfig, Wallet wallet)
         {
             System.Console.WriteLine("CreatingValueTransferTransactions");
 
@@ -56,12 +56,12 @@ namespace Erdcsharp.Console.NET_Framework
             var receiver = Address.FromBech32(BobBech32);
             await sender.Sync(provider);
 
-            var transaction = TransactionRequest.CreateTransaction(sender, constants, receiver, TokenAmount.EGLD("0.000000000000054715"));
+            var transaction = TransactionRequest.Create(sender, networkConfig, receiver, TokenAmount.EGLD("0.000000000000054715"));
             transaction.SetData("Hello world !");
-            transaction.SetGasLimit(GasLimit.ForTransfer(constants, transaction));
+            transaction.SetGasLimit(GasLimit.ForTransfer(networkConfig, transaction));
 
             var transactionResult = await transaction.Send(provider, wallet);
-            await transactionResult.WaitForExecution(provider);
+            await transactionResult.AwaitExecuted(provider);
             transactionResult.EnsureTransactionSuccess();
 
             System.Console.WriteLine("TxHash {0}", transactionResult.TxHash);

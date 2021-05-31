@@ -113,8 +113,8 @@
         public static TypeValue BooleanValue => new TypeValue(BinaryTypes.Boolean, RustTypes.Bool);
         public static TypeValue AddressValue => new TypeValue(BinaryTypes.Address, RustTypes.Address);
 
-        public static TypeValue TokenIdentifierValue =>
-            new TypeValue(BinaryTypes.TokenIdentifier, RustTypes.TokenIdentifier);
+        public static TypeValue TokenIdentifierValue => new TypeValue(BinaryTypes.TokenIdentifier, RustTypes.TokenIdentifier);
+        public static TypeValue ScResult => new TypeValue(BinaryTypes.Bytes, RustTypes.Bytes);
 
         public static TypeValue BytesValue => new TypeValue(BinaryTypes.Bytes, RustTypes.Bytes);
         public static TypeValue H256Value => new TypeValue(BinaryTypes.Bytes, RustTypes.H256);

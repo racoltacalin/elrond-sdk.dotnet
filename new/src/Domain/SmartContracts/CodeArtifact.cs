@@ -1,21 +1,21 @@
 ﻿using System.IO;
 using Erdcsharp.Domain.Helper;
 
-namespace Erdcsharp.Domain
+namespace Erdcsharp.Domain.SmartContracts
 {
-    public class Code
+    public class CodeArtifact
     {
         public string Value { get; }
 
-        public Code(byte[] bytes)
+        public CodeArtifact(byte[] bytes)
         {
             Value = Converter.ToHexString(bytes);
         }
 
-        public static Code FromFilePath(string filePath)
+        public static CodeArtifact FromFilePath(string filePath)
         {
             var fileBytes = File.ReadAllBytes(filePath);
-            return new Code(fileBytes);
+            return new CodeArtifact(fileBytes);
         }
     }
 }

@@ -1,7 +1,8 @@
 ﻿using Erdcsharp.Domain;
+using Erdcsharp.Domain.SmartContracts;
 using NUnit.Framework;
 
-namespace Erdcsharp.Tests.Domain
+namespace Erdcsharp.UnitTests.Domain
 {
     [TestFixture]
     public class SmartContractTests
@@ -11,7 +12,7 @@ namespace Erdcsharp.Tests.Domain
         {
             // Arrange
             var accountAddress = Address.FromBech32("erd1lkeja8knfjhkqzvrf3d9hmefxzt75wtf3vlg9m7ccugc8jmnrdpqy7yjeq");
-            const int accountNonce = 5;
+            const long accountNonce = 5;
 
             // Act
             var smartContractAddress = SmartContract.ComputeAddress(accountAddress, accountNonce);

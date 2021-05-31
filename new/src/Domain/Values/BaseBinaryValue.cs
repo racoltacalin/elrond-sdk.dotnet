@@ -17,17 +17,17 @@ namespace Erdcsharp.Domain.Values
             return (T) (IBinaryType)this;
         }
 
-        public T ToObject<T>()
+        public virtual T ToObject<T>()
         {
-            return JsonSerializer.Deserialize<T>(ToJSON());
+            return JsonSerializerWrapper.Deserialize<T>(ToJson());
         }
 
-        public string ToJSON()
+        public virtual string ToJson()
         {
             if (string.IsNullOrEmpty(Type.Name))
             {
                 var kv = new KeyValuePair<string, string>(Type.Name ?? "", ToString());
-                var json = JsonSerializer.Serialize(kv);
+                var json = JsonSerializerWrapper.Serialize(kv);
                 return json;
             }
             else
@@ -36,7 +36,7 @@ namespace Erdcsharp.Domain.Values
                 {
                     {Type.Name, ToString()}
                 };
-                var json = JsonSerializer.Serialize(kv);
+                var json = JsonSerializerWrapper.Serialize(kv);
                 return json;
             }
         }

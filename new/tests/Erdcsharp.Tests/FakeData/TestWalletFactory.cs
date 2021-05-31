@@ -1,6 +1,6 @@
 ﻿using Erdcsharp.Domain;
 
-namespace Erdcsharp.Tests.FakeData
+namespace Erdcsharp.UnitTests.FakeData
 {
     public class TestWalletFactory
     {
@@ -9,8 +9,7 @@ namespace Erdcsharp.Tests.FakeData
 
         public TestWalletFactory()
         {
-            Mnemonic =
-                "moral volcano peasant pass circle pen over picture flat shop clap goat never lyrics gather prepare woman film husband gravity behind test tiger improve";
+            Mnemonic = "moral volcano peasant pass circle pen over picture flat shop clap goat never lyrics gather prepare woman film husband gravity behind test tiger improve";
             Password = "password";
             Alice = Wallet.DeriveFromMnemonic(Mnemonic, 0);
             Bob = Wallet.DeriveFromMnemonic(Mnemonic, 1);
@@ -24,8 +23,7 @@ namespace Erdcsharp.Tests.FakeData
         public Wallet Alice { get; set; }
     }
 
-
-    public static class FakeData
+    public static class TestData
     {
         public const string AliceBech32 = "erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th";
         public const string AliceHex= "0139472eff6886771a982f3083da5d421f24c29181e63888228dc81ca60d69e1";

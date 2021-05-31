@@ -5,7 +5,7 @@ using Erdcsharp.Domain.Codec;
 using Erdcsharp.Domain.Values;
 using NUnit.Framework;
 
-namespace Erdcsharp.Tests.Domain.Codec
+namespace Erdcsharp.UnitTests.Domain.Codec
 {
     [TestFixture]
     public class StructBinaryCodecTests
@@ -106,7 +106,7 @@ namespace Erdcsharp.Tests.Domain.Codec
 
             var esdtTokenStructValue = payment_token.ValueOf<StructValue>();
             var token_type = esdtTokenStructValue.GetStructField("token_type").Value;
-            Assert.That(token_type.ValueOf<TokenIdentifierValue>().TokenIdentifier, Is.EqualTo("EGLD"));
+            Assert.That(token_type.ValueOf<TokenIdentifierValue>().Value, Is.EqualTo(Constants.EGLD));
             var nonce = esdtTokenStructValue.GetStructField("nonce").Value;
             Assert.That(nonce.ValueOf<NumericValue>().Number.IsZero, Is.True);
 

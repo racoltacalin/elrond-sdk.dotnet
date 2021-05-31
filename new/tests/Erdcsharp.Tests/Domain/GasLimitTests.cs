@@ -5,7 +5,7 @@ using Erdcsharp.Provider.Dtos;
 using Moq;
 using NUnit.Framework;
 
-namespace Erdcsharp.Tests.Domain
+namespace Erdcsharp.UnitTests.Domain
 {
     [TestFixture]
     public class GasLimitTests
@@ -16,7 +16,7 @@ namespace Erdcsharp.Tests.Domain
         public void Setup()
         {
             var mock = new Mock<IElrondProvider>();
-            mock.Setup(s => s.GetConstants()).ReturnsAsync(new ConfigDataDto
+            mock.Setup(s => s.GetNetworkConfig()).ReturnsAsync(new ConfigDataDto
             {
                 Config = new ConfigDto
                 {
@@ -32,9 +32,9 @@ namespace Erdcsharp.Tests.Domain
         public async Task GasLimit_Should_Compute_Gas_ForTransfer()
         {
             // Arrange
-            var constants = await Constants.GetFromNetwork(_elrondProvider);
+            var constants = await NetworkConfig.GetFromNetwork(_elrondProvider);
             var address = Address.FromBech32("erd1qqqqqqqqqqqqqpgq3wltgm6g8n6telq3wz2apgjqcydladdtu4cq3ch0l0");
-            var transactionRequest = TransactionRequest.CreateTransaction(new Account(address), constants);
+            var transactionRequest = TransactionRequest.Create(new Account(address), constants);
 
             transactionRequest.SetData("KLJHGFhjbnklmjghfdhfkjl");
 

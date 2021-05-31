@@ -2,10 +2,11 @@
 using Erdcsharp.Domain;
 using Erdcsharp.Provider;
 using Erdcsharp.Provider.Dtos;
+using Erdcsharp.UnitTests.FakeData;
 using Moq;
 using NUnit.Framework;
 
-namespace Erdcsharp.Tests.Domain
+namespace Erdcsharp.UnitTests.Domain
 {
     [TestFixture]
     public class AccountTests
@@ -22,21 +23,21 @@ namespace Erdcsharp.Tests.Domain
         public void Account_Should_Build_With_Address()
         {
             // Arrange
-            var aliceAddress = Address.From(FakeData.FakeData.AliceHex);
+            var aliceAddress = Address.From(TestData.AliceHex);
 
             // Act
             var account = new Account(aliceAddress);
 
             // Assert
-            Assert.AreEqual(account.Address, Is.EqualTo(aliceAddress));
-            Assert.AreEqual(account.Nonce, Is.EqualTo(0));
+            Assert.That(account.Address, Is.EqualTo(aliceAddress));
+            Assert.That(account.Nonce, Is.EqualTo(0));
         }
 
         [Test]
         public async Task Sync_Should_Synchronize_Account_With_Network()
         {
             // Arrange
-            var account = new Account(Address.From(FakeData.FakeData.AliceHex));
+            var account = new Account(Address.From(TestData.AliceHex));
             var address = account.Address.Bech32;
             _mockProvider.Setup(p => p.GetAccount(It.IsAny<string>())).ReturnsAsync(new AccountDataDto
             {

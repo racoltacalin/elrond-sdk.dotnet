@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using Erdcsharp.Cryptography;
+using Erdcsharp.Domain.Abi;
 using Erdcsharp.Domain.Codec;
 using Erdcsharp.Domain.Helper;
 using Erdcsharp.Domain.Values;
@@ -10,60 +12,11 @@ using Erdcsharp.Provider;
 using Erdcsharp.Provider.Dtos;
 using Org.BouncyCastle.Crypto.Digests;
 
-namespace Erdcsharp.Domain
+namespace Erdcsharp.Domain.SmartContracts
 {
     public class SmartContract
     {
-        private const string ArwenVirtualMachine = "0500";
         private static readonly BinaryCodec BinaryCoder = new BinaryCodec();
-
-        public static TransactionRequest CreateDeploySmartContractTransactionRequest(
-            Constants constants,
-            Account account,
-            Code code,
-            CodeMetadata codeMetadata,
-            params IBinaryType[] args)
-        {
-            var transaction = TransactionRequest.CreateTransaction(account, constants);
-            var data = $"{code.Value}@{ArwenVirtualMachine}@{codeMetadata.Value}";
-            if (args.Any())
-            {
-                data = args.Aggregate(data, (c, arg) => c + $"@{Converter.ToHexString(BinaryCoder.EncodeTopLevel(arg))}");
-            }
-
-            transaction.SetData(data);
-            transaction.SetGasLimit(GasLimit.ForSmartContractCall(constants, transaction));
-
-            return transaction;
-        }
-
-        public static TransactionRequest CreateUpdateSmartContractTransactionRequest(
-            Constants constants,
-            Account account,
-            Address address)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static TransactionRequest CreateCallSmartContractTransactionRequest(
-            Constants constants,
-            Account account,
-            Address address,
-            string functionName,
-            TokenAmount value,
-            params IBinaryType[] args)
-        {
-            var transaction = TransactionRequest.CreateTransaction(account, constants, address, value);
-            var data = $"{functionName}";
-            if (args.Any())
-            {
-                data = args.Aggregate(data, (c, arg) => c + $"@{Converter.ToHexString(BinaryCoder.EncodeTopLevel(arg))}");
-            }
-
-            transaction.SetData(data);
-            transaction.SetGasLimit(GasLimit.ForSmartContractCall(constants, transaction));
-            return transaction;
-        }
 
         /// <summary>
         /// Computes the address of a Smart Contract.
@@ -84,15 +37,25 @@ namespace Erdcsharp.Domain
             var hash = CalculateHash(bytesToHash);
 
             var hashBytesToTake = hash.Skip(10).Take(20).ToArray();
-            var vmTypeBytes = Converter.FromHexString(ArwenVirtualMachine);
+            var vmTypeBytes = Converter.FromHexString(Constants.ArwenVirtualMachine);
             var addressBytes = ConcatByteArrays(
                 initialPadding,
                 vmTypeBytes,
                 hashBytesToTake,
                 shardSelector);
 
-            var erdAddress = Bech32Engine.Encode("erd", addressBytes);
+            var erdAddress = Bech32Engine.Encode(Constants.Hrp, addressBytes);
             return Address.FromBech32(erdAddress);
+        }
+
+        /// <summary>
+        /// Computes the address of a Smart Contract.
+        /// </summary>
+        /// <param name="deployTransactionRequest">The deploy transaction request</param>
+        /// <returns>Deployed smart contract address</returns>
+        public static Address ComputeAddress(TransactionRequest deployTransactionRequest)
+        {
+            return ComputeAddress(deployTransactionRequest.Sender, deployTransactionRequest.Nonce);
         }
 
         /// <summary>
@@ -102,21 +65,23 @@ namespace Erdcsharp.Domain
         /// <param name="address">he Address of the Smart Contract.</param>
         /// <param name="abiDefinition">The smart contract ABI Definition</param>
         /// <param name="endpoint">The name of the Pure Function to execute.</param>
+        /// <param name="caller">Optional caller</param>
         /// <param name="args">The arguments of the Pure Function. Can be empty</param>
         /// <returns>The response</returns>
-        public static Task<IBinaryType> QuerySmartContractWithAbiDefinition(
+        public static Task<T> QuerySmartContractWithAbiDefinition<T>(
             IElrondProvider provider,
             Address address,
             AbiDefinition abiDefinition,
             string endpoint,
-            params IBinaryType[] args)
+            Address caller = null,
+            params IBinaryType[] args) where T : IBinaryType
         {
             var endpointDefinition = abiDefinition.GetEndpointDefinition(endpoint);
             var outputs = endpointDefinition.Output.Select(o => o.Type).ToArray();
             if (outputs.Length != 1)
                 throw new Exception("Bad output quantities in ABI definition. Should only be one.");
 
-            return QuerySmartContract(provider, address, outputs[0], endpoint, args);
+            return QuerySmartContract<T>(provider, address, outputs[0], endpoint, caller, args);
         }
 
         /// <summary>
@@ -126,14 +91,16 @@ namespace Erdcsharp.Domain
         /// <param name="address">he Address of the Smart Contract.</param>
         /// <param name="outputTypeValue">Output value type of the response</param>
         /// <param name="endpoint">The name of the Pure Function to execute.</param>
+        /// <param name="caller">Optional caller</param>
         /// <param name="args">The arguments of the Pure Function. Can be empty</param>
         /// <returns>The response</returns>
-        public static async Task<IBinaryType> QuerySmartContract(
+        public static async Task<T> QuerySmartContract<T>(
             IElrondProvider provider,
             Address address,
             TypeValue outputTypeValue,
             string endpoint,
-            params IBinaryType[] args)
+            Address caller = null,
+            params IBinaryType[] args) where T : IBinaryType
         {
             var arguments = args
                 .Select(typeValue => Converter.ToHexString(BinaryCoder.EncodeTopLevel(typeValue)))
@@ -143,7 +110,8 @@ namespace Erdcsharp.Domain
             {
                 FuncName = endpoint,
                 Args = arguments,
-                ScAddress = address.Bech32
+                ScAddress = address.Bech32,
+                Caller = caller?.Bech32
             };
 
             var response = await provider.QueryVm(query);
@@ -170,17 +138,17 @@ namespace Erdcsharp.Domain
                 }
 
                 var multiValue = MultiValue.From(decodedValues.ToArray());
-                return optional ? OptionValue.NewProvided(multiValue) : (IBinaryType) multiValue;
+                return (T) (optional ? OptionValue.NewProvided(multiValue) : (IBinaryType) multiValue);
             }
 
             if (data.ReturnData.Length == 0)
             {
-                return BinaryCoder.DecodeTopLevel(new byte[0], outputTypeValue);
+                return (T) BinaryCoder.DecodeTopLevel(new byte[0], outputTypeValue);
             }
 
             var returnData = Convert.FromBase64String(data.ReturnData[0]);
             var decodedResponse = BinaryCoder.DecodeTopLevel(returnData, outputTypeValue);
-            return decodedResponse;
+            return (T) decodedResponse;
         }
 
         private static byte[] ConcatByteArrays(params byte[][] arrays)

@@ -1,34 +1,34 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Elrond.SDK.Console
 {
     public class FullAuctionData
     {
-        [JsonPropertyName("payment_token")]
+        [JsonProperty("payment_token")]
         public PaymentToken PaymentToken { get; set; }
-        [JsonPropertyName("min_bid")]
+        [JsonProperty("min_bid")]
         public string MinBid { get; set; }
-        [JsonPropertyName("max_bid")]
+        [JsonProperty("max_bid")]
         public string MaxBid { get; set; }
-        [JsonPropertyName("deadline")]
+        [JsonProperty("deadline")]
         public string Deadline { get; set; }
-        [JsonPropertyName("originalOwner")]
+        [JsonProperty("original_owner")]
         public string OriginalOwner { get; set; }
-        [JsonPropertyName("current_bid")]
+        [JsonProperty("current_bid")]
         public string CurrentBid { get; set; }
-        [JsonPropertyName("current_winner")]
+        [JsonProperty("current_winner")]
         public string CurrentWinner { get; set; }
-        [JsonPropertyName("marketplace_cut_percentage")]
+        [JsonProperty("marketplace_cut_percentage")]
         public string MarketplaceCutPercentage { get; set; }
-        [JsonPropertyName("creator_royalties_percentage")]
+        [JsonProperty("creator_royalties_percentage")]
         public string CreatorRoyaltiesPercentage { get; set; }
     }
 
     public class PaymentToken
     {
-        [JsonPropertyName("token_type")]
+        [JsonProperty("token_type")]
         public string TokenType { get; set; }
-        [JsonPropertyName("nonce")]
+        [JsonProperty("nonce")]
         public string Nonce { get; set; }
     }
 }

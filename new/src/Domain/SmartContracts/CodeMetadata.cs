@@ -1,7 +1,7 @@
 ﻿using System;
 using Erdcsharp.Domain.Helper;
 
-namespace Erdcsharp.Domain
+namespace Erdcsharp.Domain.SmartContracts
 {
     public class CodeMetadata
     {
@@ -46,7 +46,7 @@ namespace Erdcsharp.Domain
 
 
         [Flags]
-        enum ByteZero : byte
+        private enum ByteZero : byte
         {
             Upgradeable = 1,
             Reserved2 = 2,
@@ -54,7 +54,7 @@ namespace Erdcsharp.Domain
         }
 
         [Flags]
-        enum ByteOne : byte
+        private enum ByteOne : byte
         {
             Reserved1 = 1,
             Payable = 2

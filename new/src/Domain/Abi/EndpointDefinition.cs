@@ -1,4 +1,6 @@
-﻿namespace Erdcsharp.Domain
+﻿using Erdcsharp.Domain.Values;
+
+namespace Erdcsharp.Domain.Abi
 {
     public class EndpointDefinition
     {
